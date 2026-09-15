@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ER Command Center — Bed Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F4F7F6;
+    --panel: #FFFFFF;
+    --ink: #142B2A;
+    --ink-soft: #4B615E;
+    --hairline: #D8E3E1;
+    --teal: #0F6659;
+    --teal-deep: #0B3B3A;
+    --teal-tint: #E4F0EE;
+    --empty: #9AAAA7;
+    --empty-tint: #F1F4F3;
+    --attention: #B23A2E;
+    --attention-tint: #FBE9E7;
+    --waiting: #B7791B;
+    --waiting-tint: #FBF1DE;
+    --review: #2E6FA3;
+    --review-tint: #E6F0F8;
+    --stable: #2F7D4F;
+    --stable-tint: #E7F3EB;
+    --mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --serif: 'Spectral', Georgia, serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--ink); font-family:var(--sans); }
+  body{ min-height:100vh; }
+  .app{ max-width:1280px; margin:0 auto; padding:0 28px 64px; }
+  .back{
+    display:inline-block; margin-top:22px; font-family:var(--mono); font-size:12.5px; color:var(--ink-soft);
+    text-decoration:none; border-bottom:1px solid var(--hairline); padding-bottom:2px;
+  }
+  header.top{
+    display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    padding:20px 0 20px; border-bottom:1px solid var(--hairline); margin-bottom:24px;
+  }
+  header.top .brand{ display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+  header.top h1{ font-family:var(--serif); font-weight:700; font-size:27px; margin:0; color:var(--teal-deep); letter-spacing:-0.01em; }
+  header.top .tagline{ font-size:13.5px; color:var(--ink-soft); max-width:400px; line-height:1.4; }
+  .shift-field{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-soft); }
+  .shift-field input{
+    font-family:var(--mono); font-size:13.5px; padding:7px 10px; border:1px solid var(--hairline);
+    border-radius:4px; background:var(--panel); width:150px; color:var(--ink);
+  }
+  .shift-field input:focus{ outline:2px solid var(--teal); outline-offset:1px; }
+
+  .disclaimer{
+    font-size:12.5px; color:var(--ink-soft); background:var(--teal-tint); border-left:3px solid var(--teal);
+    padding:10px 14px; border-radius:3px; margin-bottom:30px; line-height:1.5;
+  }
+  .disclaimer strong{ color:var(--teal-deep); }
+
+  .zone{ margin-bottom:44px; }
+  .zone-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .zone-head h2{ font-family:var(--serif); font-size:19px; font-weight:600; color:var(--teal-deep); margin:0; }
+  .zone-head .count{ font-family:var(--mono); font-size:12px; color:var(--ink-soft); }
+
+  .bed-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; }
+  @media (max-width:900px){ .bed-grid{ grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width:520px){ .bed-grid{ grid-template-columns: 1fr; } }
+
+  .bed{
+    background:var(--panel); border:1px solid var(--hairline); border-radius:8px; padding:14px;
+    cursor:pointer; transition: box-shadow .12s ease; min-height:118px; display:flex; flex-direction:column;
+  }
+  .bed:hover{ box-shadow: 0 2px 10px rgba(15,102,89,0.08); }
+  .bed.open{ cursor:default; }
+  .bed .bed-num{ font-family:var(--mono); font-size:11px; color:var(--ink-soft); }
+  .bed .bed-status{
+    display:inline-block; margin-top:6px; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; align-self:flex-start;
+  }
+  .bed .bed-case{ font-family:var(--mono); font-size:14.5px; font-weight:600; margin-top:10px; color:var(--ink); }
+  .bed .bed-cc{ font-size:12.5px; color:var(--ink-soft); margin-top:4px; line-height:1.4; flex:1; }
+  .bed .bed-time{ font-size:10.5px; color:var(--empty); margin-top:8px; }
+  .bed.is-empty{ align-items:center; justify-content:center; min-height:118px; }
+  .bed.is-empty .add-label{ font-family:var(--mono); font-size:12.5px; color:var(--empty); }
+
+  .bed-status.empty{ background:var(--empty-tint); color:var(--empty); }
+  .bed-status.attention{ background:var(--attention-tint); color:var(--attention); }
+  .bed-status.waiting{ background:var(--waiting-tint); color:var(--waiting); }
+  .bed-status.review{ background:var(--review-tint); color:var(--review); }
+  .bed-status.stable{ background:var(--stable-tint); color:var(--stable); }
+
+  /* ---- edit panel ---- */
+  .edit-panel{ display:flex; flex-direction:column; gap:8px; }
+  .edit-panel .bed-num{ margin-bottom:2px; }
+  .edit-panel input[type=text], .edit-panel textarea, .edit-panel select{
+    font-family:var(--sans); font-size:13px; padding:7px 9px; border:1px solid var(--hairline);
+    border-radius:4px; background:var(--bg); color:var(--ink); width:100%;
+  }
+  .edit-panel input[type=text]{ font-family:var(--mono); }
+  .edit-panel textarea{ resize:vertical; min-height:44px; font-family:var(--sans); }
+  .edit-panel label{ font-size:10.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em; margin-bottom:1px; display:block; }
+  .edit-actions{ display:flex; gap:8px; margin-top:4px; }
+  .edit-actions button{
+    flex:1; font-family:var(--sans); font-size:12.5px; font-weight:600; padding:7px 0; border-radius:4px;
+    border:none; cursor:pointer;
+  }
+  .btn-save{ background:var(--teal-deep); color:#fff; }
+  .btn-save:hover{ background:var(--teal); }
+  .btn-clear{ background:var(--empty-tint); color:var(--ink-soft); }
+  .btn-clear:hover{ background:#E3E9E8; }
+
+  footer.note{ font-size:11.5px; color:var(--empty); text-align:center; margin-top:20px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <a class="back" href="index.html">&larr; Tea and Toxins</a>
+
+  <header class="top">
+    <div class="brand">
+      <h1>ER Command Center</h1>
+      <span class="tagline">A personal ED workflow dashboard — bed tracking across Red Zone and HDU.</span>
+    </div>
+    <div class="shift-field">
+      <label for="shiftLabel">Shift label</label>
+      <input id="shiftLabel" type="text" placeholder="e.g. Night, Sep 16">
+    </div>
+  </header>
+
+  <div class="disclaimer">
+    <strong>Personal workflow aid only.</strong> Not a substitute for your hospital's EMR or handover system. Use only case identifiers or bed numbers — never patient-identifying information. Data is saved only in this browser, on this device.
+  </div>
+
+  <div class="zone" data-zone="red">
+    <div class="zone-head"><h2>Red Zone</h2><span class="count" id="redCount">0 / 8 occupied</span></div>
+    <div class="bed-grid" id="redGrid"></div>
+  </div>
+
+  <div class="zone" data-zone="hdu">
+    <div class="zone-head"><h2>HDU</h2><span class="count" id="hduCount">0 / 4 occupied</span></div>
+    <div class="bed-grid" id="hduGrid"></div>
+  </div>
+
+  <footer class="note">Board resets are manual — clear a bed when the patient moves on. Nothing here syncs to any other device.</footer>
+</div>
+
+<script>
+(function(){
+  var STORAGE_KEY = 'er-command-center-board-v1';
+  var ZONES = [
+    { key:'red', label:'Red Zone', count:8, gridId:'redGrid', countId:'redCount' },
+    { key:'hdu', label:'HDU', count:4, gridId:'hduGrid', countId:'hduCount' }
+  ];
+  var STATUSES = [
+    { value:'empty', label:'Empty' },
+    { value:'attention', label:'Needs attention' },
+    { value:'waiting', label:'Waiting' },
+    { value:'review', label:'Review soon' },
+    { value:'stable', label:'Stable' }
+  ];
+  var statusLabel = {};
+  STATUSES.forEach(function(s){ statusLabel[s.value] = s.label; });
+
+  function loadBoard(){
+    try{
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){ return {}; }
+  }
+  function saveBoard(board){
+    try{ window.localStorage.setItem(STORAGE_KEY, JSON.stringify(board)); }catch(e){}
+  }
+  function bedKey(zone, i){ return zone + '-' + i; }
+
+  var board = loadBoard();
+  var openBed = null; // currently expanded bed key
+
+  function fmtTime(ts){
+    if (!ts) return '';
+    var dt = new Date(ts);
+    return 'updated ' + dt.toLocaleDateString(undefined,{month:'short', day:'numeric'}) + ' ' + dt.toLocaleTimeString(undefined,{hour:'2-digit', minute:'2-digit'});
+  }
+
+  function renderZone(zone){
+    var grid = document.getElementById(zone.gridId);
+    grid.innerHTML = '';
+    var occupied = 0;
+    for (var i = 1; i <= zone.count; i++){
+      var key = bedKey(zone.key, i);
+      var data = board[key];
+      if (data && data.status && data.status !== 'empty') occupied++;
+      grid.appendChild(renderBed(zone, i, key, data));
+    }
+    document.getElementById(zone.countId).textContent = occupied + ' / ' + zone.count + ' occupied';
+  }
+
+  function renderBed(zone, num, key, data){
+    var el = document.createElement('div');
+    var status = (data && data.status) || 'empty';
+
+    if (openBed === key){
+      el.className = 'bed open';
+      el.appendChild(renderEditPanel(zone, num, key, data));
+      return el;
+    }
+
+    el.className = 'bed' + (status === 'empty' ? ' is-empty' : '');
+    if (status === 'empty'){
+      el.innerHTML =
+        '<div class="bed-num">' + zone.label + ' · Bed ' + num + '</div>' +
+        '<div class="add-label" style="margin-top:8px;">+ add patient</div>';
+    } else {
+      el.innerHTML =
+        '<div class="bed-num">' + zone.label + ' · Bed ' + num + '</div>' +
+        '<span class="bed-status ' + status + '">' + statusLabel[status] + '</span>' +
+        '<div class="bed-case">' + escapeHtml(data.caseId || '—') + '</div>' +
+        '<div class="bed-cc">' + escapeHtml(data.chiefComplaint || '') + '</div>' +
+        '<div class="bed-time">' + fmtTime(data.updatedAt) + '</div>';
+    }
+    el.addEventListener('click', function(){
+      openBed = key;
+      renderAll();
+    });
+    return el;
+  }
+
+  function renderEditPanel(zone, num, key, data){
+    data = data || {};
+    var wrap = document.createElement('div');
+    wrap.className = 'edit-panel';
+
+    var title = document.createElement('div');
+    title.className = 'bed-num';
+    title.textContent = zone.label + ' · Bed ' + num;
+    wrap.appendChild(title);
+
+    var caseLabel = document.createElement('label'); caseLabel.textContent = 'Case ID';
+    var caseInput = document.createElement('input'); caseInput.type = 'text'; caseInput.value = data.caseId || '';
+    caseInput.placeholder = 'e.g. B-3';
+
+    var statusLbl = document.createElement('label'); statusLbl.textContent = 'Status';
+    var statusSelect = document.createElement('select');
+    STATUSES.forEach(function(s){
+      var opt = document.createElement('option');
+      opt.value = s.value; opt.textContent = s.label;
+      if ((data.status || 'attention') === s.value) opt.selected = true;
+      statusSelect.appendChild(opt);
+    });
+
+    var ccLabel = document.createElement('label'); ccLabel.textContent = 'Chief complaint';
+    var ccInput = document.createElement('input'); ccInput.type = 'text'; ccInput.value = data.chiefComplaint || '';
+    ccInput.placeholder = 'e.g. chest pain, breathless';
+
+    var notesLabel = document.createElement('label'); notesLabel.textContent = 'Notes';
+    var notesInput = document.createElement('textarea'); notesInput.value = data.notes || '';
+    notesInput.placeholder = 'Plan, pending results, disposition...';
+
+    var actions = document.createElement('div');
+    actions.className = 'edit-actions';
+    var saveBtn = document.createElement('button');
+    saveBtn.className = 'btn-save'; saveBtn.textContent = 'Save';
+    var clearBtn = document.createElement('button');
+    clearBtn.className = 'btn-clear'; clearBtn.textContent = 'Clear bed';
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'btn-clear'; closeBtn.textContent = 'Close';
+
+    saveBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      board[key] = {
+        caseId: caseInput.value.trim(),
+        status: statusSelect.value,
+        chiefComplaint: ccInput.value.trim(),
+        notes: notesInput.value.trim(),
+        updatedAt: Date.now()
+      };
+      saveBoard(board);
+      openBed = null;
+      renderAll();
+    });
+    clearBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      delete board[key];
+      saveBoard(board);
+      openBed = null;
+      renderAll();
+    });
+    closeBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      openBed = null;
+      renderAll();
+    });
+
+    [caseInput, statusSelect, ccInput, notesInput].forEach(function(f){
+      f.addEventListener('click', function(e){ e.stopPropagation(); });
+    });
+
+    actions.appendChild(saveBtn);
+    actions.appendChild(clearBtn);
+    actions.appendChild(closeBtn);
+
+    wrap.appendChild(caseLabel); wrap.appendChild(caseInput);
+    wrap.appendChild(statusLbl); wrap.appendChild(statusSelect);
+    wrap.appendChild(ccLabel); wrap.appendChild(ccInput);
+    wrap.appendChild(notesLabel); wrap.appendChild(notesInput);
+    wrap.appendChild(actions);
+    return wrap;
+  }
+
+  function escapeHtml(str){
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function renderAll(){
+    ZONES.forEach(renderZone);
+  }
+
+  // shift label persistence (per device, just a convenience label)
+  var shiftInput = document.getElementById('shiftLabel');
+  try{ shiftInput.value = window.localStorage.getItem('er-command-center-shift') || ''; }catch(e){}
+  shiftInput.addEventListener('input', function(){
+    try{ window.localStorage.setItem('er-command-center-shift', shiftInput.value); }catch(e){}
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
