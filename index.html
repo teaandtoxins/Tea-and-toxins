@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tea and Toxins — Dr. Shifana</title>
+<meta name="description" content="Emergency medicine stories, exam-prep systems, and health education from an EM resident — Tea and Toxins.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #EEE2D1;
+    --paper-deep: #E3D3BB;
+    --ink: #241A12;
+    --ink-soft: #6B5A48;
+    --espresso: #1B120D;
+    --espresso-soft: #2A1E15;
+    --cream-text: #F4ECDF;
+    --cream-soft: #C9BBA6;
+    --rust: #9C4221;
+    --rust-soft: #C97B54;
+    --sage: #445940;
+    --hairline: #D6C3A3;
+    --hairline-dark: #3B2E22;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{ font-family:'Fraunces', Georgia, serif; margin:0; font-weight:500; }
+  p{ margin:0; }
+  a{ color:inherit; text-decoration:none; }
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 32px; }
+  @media (max-width:640px){ .wrap{ padding:0 22px; } }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky; top:0; z-index:50; background:rgba(238,226,209,0.92); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--hairline);
+  }
+  nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:64px; }
+  nav .wordmark{ font-family:'Fraunces', serif; font-style:italic; font-size:19px; font-weight:500; }
+  nav .ig{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--ink); border:1px solid var(--ink);
+    padding:7px 14px; border-radius:20px; transition:background .15s ease, color .15s ease;
+  }
+  nav .ig:hover{ background:var(--ink); color:var(--paper); }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    background:var(--espresso); color:var(--cream-text); padding:96px 0 76px; overflow:hidden; position:relative;
+  }
+  .hero .wrap{ display:grid; grid-template-columns: 1.15fr 0.85fr; gap:48px; align-items:center; }
+  @media (max-width:860px){ .hero .wrap{ grid-template-columns:1fr; } .hero .art{ order:-1; margin-bottom:8px; } }
+  .hero .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--rust-soft); margin-bottom:18px; display:block;
+  }
+  .hero h1{ font-size:clamp(42px, 6.5vw, 68px); line-height:1.03; color:var(--cream-text); letter-spacing:-0.01em; }
+  .hero h1 em{ font-style:italic; color:var(--rust-soft); }
+  .hero .tagline{ font-size:18px; line-height:1.55; color:var(--cream-soft); max-width:460px; margin-top:22px; }
+  .hero .cta-row{ margin-top:34px; display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
+  .cta-primary{
+    background:var(--rust); color:var(--cream-text); padding:13px 24px; border-radius:4px; font-size:14.5px;
+    font-weight:600; display:inline-block; transition:background .15s ease;
+  }
+  .cta-primary:hover{ background:var(--rust-soft); }
+  .cta-secondary{ font-size:13.5px; color:var(--cream-soft); border-bottom:1px solid var(--hairline-dark); padding-bottom:2px; }
+  .hero .art svg{ width:100%; height:auto; max-width:340px; display:block; margin:0 auto; }
+
+  /* the EKG steam line is fully visible by default; script below adds a
+     one-time draw-in reveal where supported, without ever hiding it */
+
+  /* ---------- ABOUT ---------- */
+  .about{ padding:104px 0; }
+  .about .wrap{ display:grid; grid-template-columns: 0.9fr 1.1fr; gap:56px; align-items:start; }
+  @media (max-width:780px){ .about .wrap{ grid-template-columns:1fr; gap:28px; } }
+  .about .label{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--rust); }
+  .about h2{ font-size:clamp(30px, 4vw, 40px); margin-top:10px; line-height:1.15; color:var(--ink); }
+  .about .body p{ font-size:16.5px; line-height:1.75; color:var(--ink-soft); }
+  .about .body p + p{ margin-top:18px; }
+  .about .cred{
+    margin-top:26px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--ink);
+    border-top:1px solid var(--hairline); padding-top:16px;
+  }
+
+  /* ---------- MENU ---------- */
+  .menu{ background:var(--paper-deep); padding:100px 0; border-top:1px solid var(--hairline); border-bottom:1px solid var(--hairline); }
+  .menu .label{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--rust); }
+  .menu h2{ font-size:clamp(30px, 4vw, 40px); margin-top:10px; margin-bottom:52px; color:var(--ink); }
+  .menu-item{
+    display:flex; justify-content:space-between; align-items:baseline; gap:20px;
+    padding:26px 0; border-bottom:1px solid var(--hairline);
+  }
+  .menu-item:first-of-type{ border-top:1px solid var(--hairline); }
+  .menu-item .mi-left{ flex:1; }
+  .menu-item h3{ font-size:22px; color:var(--ink); }
+  .menu-item p{ font-size:14.5px; color:var(--ink-soft); margin-top:8px; line-height:1.6; max-width:520px; }
+  .menu-item .tag{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--rust); white-space:nowrap;
+    padding-top:4px; text-align:right;
+  }
+
+  /* ---------- BREWING ---------- */
+  .brewing{ padding:100px 0; }
+  .brewing .label{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--rust); }
+  .brewing h2{ font-size:clamp(30px, 4vw, 40px); margin-top:10px; margin-bottom:48px; color:var(--ink); }
+  .brew-list{ display:flex; flex-direction:column; gap:0; }
+  .brew-item{ display:grid; grid-template-columns: 130px 1fr; gap:24px; padding:22px 0; border-bottom:1px solid var(--hairline); }
+  .brew-item:first-child{ border-top:1px solid var(--hairline); }
+  @media (max-width:600px){ .brew-item{ grid-template-columns:1fr; gap:6px; } }
+  .brew-item .status{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--sage); align-self:start; padding-top:3px; }
+  .brew-item h3{ font-size:18.5px; font-weight:500; color:var(--ink); }
+  .brew-item p{ font-size:14px; color:var(--ink-soft); margin-top:6px; line-height:1.6; max-width:560px; }
+
+  /* ---------- FOLLOW ---------- */
+  .follow{ background:var(--espresso); color:var(--cream-text); padding:96px 0; text-align:center; }
+  .follow h2{ font-size:clamp(32px, 5vw, 48px); color:var(--cream-text); max-width:640px; margin:0 auto; line-height:1.2; }
+  .follow .sub{ font-size:15.5px; color:var(--cream-soft); margin-top:18px; max-width:460px; margin-left:auto; margin-right:auto; line-height:1.6; }
+  .follow .cta-primary{ margin-top:32px; display:inline-block; }
+
+  /* ---------- FOOTER ---------- */
+  footer{ background:var(--espresso-soft); color:var(--cream-soft); padding:28px 0; }
+  footer .wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+  footer p{ font-size:12px; line-height:1.6; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <span class="wordmark">Tea and Toxins</span>
+    <a class="ig" href="https://instagram.com/tea.and.toxins" target="_blank" rel="noopener">@tea.and.toxins</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">Emergency medicine, unfiltered</span>
+      <h1>Tea and <em>Toxins</em></h1>
+      <p class="tagline">Gossiping about the ER, one tea break at a time — stories, systems, and the occasional public-health rant, from a resident who's lived through the chaos.</p>
+      <div class="cta-row">
+        <a class="cta-primary" href="https://instagram.com/tea.and.toxins" target="_blank" rel="noopener">Follow along on Instagram</a>
+        <a class="cta-secondary" href="#about">Read the story</a>
+      </div>
+    </div>
+    <div class="art" aria-hidden="true">
+      <svg viewBox="0 0 300 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- steam as an EKG line -->
+        <path id="steamLine" d="M60 70 L85 70 L95 40 L108 100 L120 70 L300 70" stroke="#C97B54" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- teacup -->
+        <path d="M40 120 h150 v42 c0 34 -33 60 -75 60 s-75 -26 -75 -60 z" stroke="#F4ECDF" stroke-width="4" fill="none"/>
+        <path d="M190 132 c26 0 44 16 44 36 s-18 36 -44 36" stroke="#F4ECDF" stroke-width="4" fill="none"/>
+        <ellipse cx="115" cy="120" rx="75" ry="11" stroke="#F4ECDF" stroke-width="4" fill="#2A1E15"/>
+        <!-- saucer -->
+        <ellipse cx="115" cy="228" rx="98" ry="10" stroke="#5B4A3B" stroke-width="3" fill="none"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="wrap">
+    <div>
+      <span class="label">Written between shifts</span>
+    </div>
+    <div class="body">
+      <h2>Most days start in a trauma bay<br>and end with a half-finished cup of tea.</h2>
+      <p style="margin-top:22px;">I'm Dr. Shifana, a final-year resident in Emergency Medicine at a government teaching hospital in Tamil Nadu. Tea and Toxins is where the two halves of that sentence collide — the unfiltered version of what actually happens on shift, next to the structured, pattern-based systems I built to survive my own training.</p>
+      <p>It started as a way to make sense of my own exam prep. It's slowly turned into a place for anyone training in Indian emergency medicine — and for anyone who's ever ended up on the other side of that trauma bay and wanted to understand what was happening to them.</p>
+      <div class="cred">Dr. Shifana · MD (Emergency Medicine), Final Year<br>Government Theni Medical College &amp; Hospital, Tamil Nadu</div>
+    </div>
+  </div>
+</section>
+
+<section class="menu">
+  <div class="wrap">
+    <span class="label">What's on the menu</span>
+    <h2>Three things, poured regularly</h2>
+
+    <div class="menu-item">
+      <div class="mi-left">
+        <h3>ER Gossip</h3>
+        <p>The messy, funny, occasionally heartbreaking things that happen on shift — told the way residents actually talk about them on a break, not the way a textbook would.</p>
+      </div>
+      <div class="tag">daily brew</div>
+    </div>
+
+    <div class="menu-item">
+      <div class="mi-left">
+        <h3>The Systemized Resident</h3>
+        <p>Structured, high-yield systems for cracking Emergency Medicine postgraduate exams — because nobody actually teaches you how to study for this.</p>
+      </div>
+      <div class="tag">exam season</div>
+    </div>
+
+    <div class="menu-item">
+      <div class="mi-left">
+        <h3>Health, Explained</h3>
+        <p>Plain-language health education for the people who end up in the ER — not just the doctors treating them.</p>
+      </div>
+      <div class="tag">weekly</div>
+    </div>
+  </div>
+</section>
+
+<section class="brewing">
+  <div class="wrap">
+    <span class="label">Behind the counter</span>
+    <h2>Currently brewing</h2>
+
+    <div class="brew-list">
+      <div class="brew-item">
+        <div class="status">researching</div>
+        <div>
+          <h3>Reading the diaphragm</h3>
+          <p>A dissertation comparing diaphragmatic ultrasound against the standard clinical scores for predicting outcomes in COPD flare-ups — the research question that started all of this.</p>
+        </div>
+      </div>
+      <div class="brew-item">
+        <div class="status">early-stage</div>
+        <div>
+          <h3>DiaPredict</h3>
+          <p>An early prototype turning that dissertation's core idea into a bedside tool clinicians could actually use — still a long way from patient-ready.</p>
+        </div>
+      </div>
+      <div class="brew-item">
+        <div class="status">ongoing</div>
+        <div>
+          <h3>A growing shelf of ED reference tools</h3>
+          <p>Quick, structured clinical references built while training and shared as they're made — case sheets, scoring systems, and workflow aids for the department.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="follow">
+  <div class="wrap">
+    <h2>Come sit with the chaos.</h2>
+    <p class="sub">New stories and systems, posted between shifts. No spam, just tea and the occasional toxin.</p>
+    <a class="cta-primary" href="https://instagram.com/tea.and.toxins" target="_blank" rel="noopener">Follow @tea.and.toxins</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Tea and Toxins — Dr. Shifana, MD (Emergency Medicine)<br>Government Theni Medical College &amp; Hospital, Tamil Nadu</p>
+    <p>Brewed between shifts.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var line = document.getElementById('steamLine');
+  if (!line || !line.getTotalLength) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var len = line.getTotalLength();
+  line.style.strokeDasharray = len;
+  line.style.strokeDashoffset = len;
+  // force a reflow so the browser registers the starting state before transitioning
+  line.getBoundingClientRect();
+  line.style.transition = 'stroke-dashoffset 1.6s ease-out 0.2s';
+  requestAnimationFrame(function(){ line.style.strokeDashoffset = '0'; });
+})();
+</script>
+</body>
+</html>
