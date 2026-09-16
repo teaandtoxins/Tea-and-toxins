@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ER or Not? — Tea and Toxins</title>
+<meta name="description" content="A quick-fire symptom triage game. Guess ER, doctor tomorrow, or fine — then find out what an actual ER resident would do.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #1B120D;
+    --paper-deep: #2A1E15;
+    --ink: #F4ECDF;
+    --ink-soft: #C9BBA6;
+    --espresso: #0D0805;
+    --espresso-soft: #070402;
+    --cream-text: #F4ECDF;
+    --cream-soft: #C9BBA6;
+    --rust: #C97B54;
+    --rust-soft: #E3A47E;
+    --sage: #6E8A68;
+    --hairline: rgba(244,236,223,0.16);
+    --hairline-dark: rgba(244,236,223,0.16);
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--paper); color:var(--ink); min-height:100vh;
+    font-family:'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{ font-family:'Fraunces', Georgia, serif; margin:0; font-weight:500; }
+  p{ margin:0; }
+  a{ color:inherit; }
+  .wrap{ max-width:640px; margin:0 auto; padding:0 22px; }
+
+  nav{ background:var(--espresso); padding:18px 0; }
+  nav .wrap{ display:flex; align-items:center; justify-content:space-between; }
+  nav .back{ font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--cream-soft); text-decoration:none; }
+  nav .wordmark{ font-family:'Fraunces', serif; font-style:italic; font-size:16px; color:var(--cream-text); }
+
+  header.hero{ padding:52px 0 30px; text-align:center; }
+  .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--rust); letter-spacing:.02em; }
+  header.hero h1{ font-size:clamp(32px,7vw,44px); margin-top:12px; line-height:1.1; }
+  header.hero h1 em{ font-style:italic; color:var(--rust); }
+  header.hero .sub{ font-size:15px; color:var(--ink-soft); margin-top:14px; line-height:1.6; }
+
+  .stage{ padding:10px 0 80px; }
+  .progress{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); margin-bottom:14px; text-align:center; }
+
+  .card{
+    background:var(--paper-deep); border:1px solid var(--hairline); border-radius:10px;
+    padding:32px 26px; text-align:center;
+  }
+  .scenario{ font-size:19px; line-height:1.5; color:var(--ink); min-height:88px; display:flex; align-items:center; justify-content:center; }
+
+  .choices{ display:flex; flex-direction:column; gap:12px; margin-top:26px; }
+  .choice{
+    font-family:'Work Sans',sans-serif; font-weight:600; font-size:14.5px; padding:14px 18px;
+    border:1px solid var(--ink); border-radius:6px; background:var(--paper); color:var(--ink);
+    cursor:pointer; transition:background .15s ease, color .15s ease;
+  }
+  .choice:hover{ background:var(--ink); color:var(--paper); }
+  .choice:disabled{ cursor:default; opacity:.55; }
+
+  .reveal{ margin-top:22px; text-align:left; display:none; }
+  .reveal.show{ display:block; }
+  .reveal .verdict{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; padding:5px 12px; border-radius:20px;
+    display:inline-block; margin-bottom:12px;
+  }
+  .verdict.correct{ background:var(--sage); color:var(--espresso-soft); }
+  .verdict.wrong{ background:var(--rust); color:var(--espresso-soft); }
+  .reveal .answer{ font-size:13.5px; font-family:'IBM Plex Mono', monospace; color:var(--rust); margin-bottom:8px; }
+  .reveal .why{ font-size:14.5px; line-height:1.65; color:var(--ink-soft); }
+  .next{
+    margin-top:24px; font-family:'Work Sans',sans-serif; font-weight:600; font-size:14px; padding:12px 22px;
+    border:none; border-radius:6px; background:var(--rust); color:var(--espresso-soft); cursor:pointer; display:none;
+  }
+  .next.show{ display:inline-block; }
+
+  .result{ display:none; text-align:center; padding:20px 0 10px; }
+  .result.show{ display:block; }
+  .result .score{ font-size:clamp(48px,12vw,64px); color:var(--rust); margin:16px 0 6px; }
+  .result h2{ font-size:24px; }
+  .result p.line{ font-size:15px; color:var(--ink-soft); margin-top:12px; line-height:1.6; max-width:460px; margin-left:auto; margin-right:auto; }
+  .result .cta-row{ margin-top:30px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .cta-primary{
+    background:var(--rust); color:var(--cream-text); padding:13px 24px; border-radius:4px; font-size:14px;
+    font-weight:600; text-decoration:none; display:inline-block;
+  }
+  .cta-secondary{
+    border:1px solid var(--ink); color:var(--ink); padding:13px 24px; border-radius:4px; font-size:14px;
+    font-weight:600; text-decoration:none; display:inline-block; background:none;
+  }
+
+  footer{ background:var(--espresso-soft); color:var(--cream-soft); padding:22px 0; text-align:center; }
+  footer p{ font-size:11.5px; line-height:1.6; }
+  .disclaimer{ font-size:11.5px; color:var(--ink-soft); text-align:center; margin-top:34px; line-height:1.6; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="back" href="index.html">← Tea and Toxins</a>
+    <span class="wordmark">ER or Not?</span>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">a Tea and Toxins triage game</span>
+    <h1>ER, or <em>not</em>?</h1>
+    <p class="sub">Ten real situations. You decide: rush to the ER, see a doctor tomorrow, or relax with a cup of tea. Then find out what actually happens on the other side of that decision.</p>
+  </div>
+</header>
+
+<main class="stage">
+  <div class="wrap">
+    <div id="progress" class="progress">Question 1 of 10</div>
+
+    <div class="card">
+      <div id="scenario" class="scenario"></div>
+
+      <div id="choices" class="choices"></div>
+
+      <div id="reveal" class="reveal">
+        <span id="verdictTag" class="verdict"></span>
+        <div id="answerLine" class="answer"></div>
+        <p id="whyLine" class="why"></p>
+      </div>
+
+      <button id="nextBtn" class="next">Next →</button>
+    </div>
+
+    <div id="result" class="result">
+      <span class="eyebrow">your score</span>
+      <div id="scoreNum" class="score">0/10</div>
+      <h2 id="scoreTitle">Triage Trainee</h2>
+      <p id="scoreLine" class="line"></p>
+      <div class="cta-row">
+        <a class="cta-primary" href="https://instagram.com/tea.and.toxins" target="_blank" rel="noopener">Follow @tea.and.toxins</a>
+        <a class="cta-secondary" href="#" id="retryBtn">Play again</a>
+      </div>
+    </div>
+
+    <p class="disclaimer">Built for fun and general awareness by an ER resident — not a substitute for real medical advice. When in genuine doubt about your own symptoms, call a doctor or go in. This game simplifies; real triage always weighs your full history.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Tea and Toxins — Dr. Shifana, MD (Emergency Medicine)</p>
+  </div>
+</footer>
+
+<script>
+const SCENARIOS = [
+  {
+    text: "Crushing chest pain for 20 minutes, sweating, left arm feels heavy. You're 52.",
+    correct: "er",
+    why: "Classic ACS pattern — chest pain plus diaphoresis and arm heaviness needs an ECG and troponin now, not tomorrow. Every minute costs heart muscle. This is a straight-to-ER, call-an-ambulance situation."
+  },
+  {
+    text: "Mild sore throat and a blocked nose for two days. No fever, still eating fine.",
+    correct: "fine",
+    why: "A garden-variety viral URI. Fluids, rest, and paracetamol if needed. No red flags here — save the ER visit for when you actually need it."
+  },
+  {
+    text: "Sudden drooping on one side of the face, slurred speech, can't lift one arm properly. Started 40 minutes ago.",
+    correct: "er",
+    why: "Textbook stroke (FAST) symptoms. Clot-busting treatment has a narrow window — this is an ambulance call, not a wait-and-see."
+  },
+  {
+    text: "Twisted your ankle playing football. Swollen, hurts to walk on but you can bear some weight.",
+    correct: "tomorrow",
+    why: "No obvious deformity and some weight-bearing usually means it's a sprain, not a fracture needing an ER X-ray tonight. Ice, elevate, and get it checked by a doctor in the next day or two if it doesn't settle."
+  },
+  {
+    text: "Worst headache of your life, sudden onset, like being hit — with neck stiffness.",
+    correct: "er",
+    why: "'Thunderclap' headache is the classic description doctors are trained to worry about for a brain bleed. This is an ER-now symptom, even if it turns out to be nothing."
+  },
+  {
+    text: "Toddler has a fever of 100.4°F, playful, eating, drinking normally.",
+    correct: "fine",
+    why: "A well-looking, feeding, playful child with a low-grade fever is reassuring. Fluids and fever monitoring at home is reasonable — the concern is a lethargic or floppy child, not this one."
+  },
+  {
+    text: "Sudden severe abdominal pain that started around the belly button and has now settled in the lower right side, with nausea.",
+    correct: "er",
+    why: "That migration pattern is the classic story for appendicitis. It needs an exam and bloods promptly — waiting risks a rupture."
+  },
+  {
+    text: "Mild lower back ache after a long day of sitting, no leg weakness or numbness, no fever.",
+    correct: "fine",
+    why: "Ordinary mechanical back pain, without red flags like weakness, numbness, or loss of bladder control, generally settles with rest, movement, and time."
+  },
+  {
+    text: "Deep cut on the hand from a kitchen knife — bleeding won't stop after 10 minutes of firm pressure, edges gaping open.",
+    correct: "er",
+    why: "Bleeding that won't stop with direct pressure, or a wound gaping enough that it likely needs stitches, is an ER job — delaying raises infection risk and worsens the eventual scar."
+  },
+  {
+    text: "New mild ankle swelling in both legs after a long flight, no chest pain or breathlessness, otherwise well.",
+    correct: "tomorrow",
+    why: "Bilateral, painless swelling without breathlessness is less alarming than one-sided swelling with pain (which raises a clot concern). Still worth a doctor's visit soon to check, but not a middle-of-the-night ER dash."
+  }
+];
+
+const LABELS = { er: "Rush to the ER", tomorrow: "See a doctor tomorrow", fine: "It's fine, relax" };
+let idx = 0, score = 0, answered = false;
+
+const scenarioEl = document.getElementById('scenario');
+const choicesEl = document.getElementById('choices');
+const revealEl = document.getElementById('reveal');
+const verdictTag = document.getElementById('verdictTag');
+const answerLine = document.getElementById('answerLine');
+const whyLine = document.getElementById('whyLine');
+const nextBtn = document.getElementById('nextBtn');
+const progressEl = document.getElementById('progress');
+const cardEl = document.querySelector('.card');
+const resultEl = document.getElementById('result');
+
+function render(){
+  answered = false;
+  revealEl.classList.remove('show');
+  nextBtn.classList.remove('show');
+  progressEl.textContent = `Question ${idx+1} of ${SCENARIOS.length}`;
+  const s = SCENARIOS[idx];
+  scenarioEl.textContent = s.text;
+  choicesEl.innerHTML = '';
+  Object.entries(LABELS).forEach(([key,label])=>{
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.textContent = label;
+    btn.onclick = ()=> pick(key, btn);
+    choicesEl.appendChild(btn);
+  });
+}
+
+function pick(key, btn){
+  if(answered) return;
+  answered = true;
+  const s = SCENARIOS[idx];
+  const isCorrect = key === s.correct;
+  if(isCorrect) score++;
+  document.querySelectorAll('.choice').forEach(b=>b.disabled = true);
+  verdictTag.textContent = isCorrect ? "You got it" : "Not quite";
+  verdictTag.className = 'verdict ' + (isCorrect ? 'correct' : 'wrong');
+  answerLine.textContent = "What an ER doctor would actually say: " + LABELS[s.correct];
+  whyLine.textContent = s.why;
+  revealEl.classList.add('show');
+  nextBtn.classList.add('show');
+}
+
+nextBtn.onclick = ()=>{
+  idx++;
+  if(idx >= SCENARIOS.length){ showResult(); }
+  else{ render(); }
+};
+
+function showResult(){
+  cardEl.style.display = 'none';
+  progressEl.style.display = 'none';
+  resultEl.classList.add('show');
+  document.getElementById('scoreNum').textContent = `${score}/${SCENARIOS.length}`;
+  let title, line;
+  if(score >= 9){ title = "Certified Triage Instinct"; line = "You'd survive an ER shift on gut instinct alone. Suspiciously good."; }
+  else if(score >= 6){ title = "Sharp Triage Sense"; line = "Solid instincts — a couple of these trip up almost everyone."; }
+  else if(score >= 3){ title = "Learning the Ropes"; line = "You're getting there. The gaps between 'wait it out' and 'go now' are exactly what this game is for."; }
+  else{ title = "Triage Trainee"; line = "Everyone starts here. Share this and see if your friends do any better."; }
+  document.getElementById('scoreTitle').textContent = title;
+  document.getElementById('scoreLine').textContent = line;
+}
+
+document.getElementById('retryBtn').onclick = (e)=>{
+  e.preventDefault();
+  idx = 0; score = 0;
+  resultEl.classList.remove('show');
+  cardEl.style.display = '';
+  progressEl.style.display = '';
+  render();
+};
+
+render();
+</script>
+</body>
+</html>
