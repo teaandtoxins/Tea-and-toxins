@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tea and Toxins — Dr. Shifana</title>
+<meta name="description" content="Emergency medicine stories, exam-prep systems, and health education from an EM resident — Tea and Toxins.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #1B120D;
+    --paper-deep: #2A1E15;
+    --ink: #F4ECDF;
+    --ink-soft: #C9BBA6;
+    --espresso: #0D0805;
+    --espresso-soft: #070402;
+    --cream-text: #F4ECDF;
+    --cream-soft: #C9BBA6;
+    --rust: #C97B54;
+    --rust-soft: #E3A47E;
+    --sage: #6E8A68;
+    --hairline: rgba(244,236,223,0.14);
+    --hairline-dark: rgba(244,236,223,0.16);
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{ font-family:'Fraunces', Georgia, serif; margin:0; font-weight:500; }
+  p{ margin:0; }
+  a{ color:inherit; text-decoration:none; }
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 32px; }
+  @media (max-width:640px){ .wrap{ padding:0 22px; } }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky; top:0; z-index:50; background:rgba(13,8,5,0.9); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--hairline);
+  }
+  nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:64px; gap:16px; }
+  nav .nav-left{ display:flex; align-items:center; gap:16px; }
+  nav .wordmark{ font-family:'Fraunces', serif; font-style:italic; font-size:19px; font-weight:500; }
+  nav .ig{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--ink); border:1px solid var(--ink);
+    padding:7px 14px; border-radius:20px; transition:background .15s ease, color .15s ease;
+  }
+  nav .ig:hover{ background:var(--ink); color:var(--paper); }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    background:var(--espresso); color:var(--cream-text); padding:96px 0 76px; overflow:hidden; position:relative;
+  }
+  .hero .wrap{ display:grid; grid-template-columns: 1.15fr 0.85fr; gap:48px; align-items:center; }
+  @media (max-width:860px){ .hero .wrap{ grid-template-columns:1fr; } .hero .art{ order:-1; margin-bottom:8px; } }
+  .hero .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--rust-soft); margin-bottom:18px; display:block;
+  }
+  .hero h1{ font-size:clamp(42px, 6.5vw, 68px); line-height:1.03; color:var(--cream-text); letter-spacing:-0.01em; }
+  .hero h1 em{ font-style:italic; color:var(--rust-soft); }
+  .hero .tagline{ font-size:18px; line-height:1.55; color:var(--cream-soft); max-width:460px; margin-top:22px; }
+  .hero .cta-row{ margin-top:34px; display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
+  .cta-primary{
+    background:var(--rust); color:var(--espresso-soft); padding:13px 24px; border-radius:4px; font-size:14.5px;
+    font-weight:600; display:inline-block; transition:background .15s ease;
+  }
+  .cta-primary:hover{ background:var(--rust-soft); }
+  .cta-secondary{ font-size:13.5px; color:var(--cream-soft); border-bottom:1px solid var(--hairline-dark); padding-bottom:2px; }
+  .hero .art svg{ width:100%; height:auto; max-width:340px; display:block; margin:0 auto; }
+
+  /* the EKG steam line is fully visible by default; script below adds a
+     one-time draw-in reveal where supported, without ever hiding it */
+
+  /* ---------- ABOUT ---------- */
+  .about{ padding:104px 0; }
+  .about .wrap{ display:grid; grid-template-columns: 0.9fr 1.1fr; gap:56px; align-items:start; }
+  @media (max-width:780px){ .about .wrap{ grid-template-columns:1fr; gap:28px; } }
+  .about .label{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--rust); }
+  .about h2{ font-size:clamp(30px, 4vw, 40px); margin-top:10px; line-height:1.15; color:var(--ink); }
+  .about .body p{ font-size:16.5px; line-height:1.75; color:var(--ink-soft); }
+  .about .body p + p{ margin-top:18px; }
+  .about .cred{
+    margin-top:26px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--ink);
+    border-top:1px solid var(--hairline); padding-top:16px;
+  }
+
+  /* ---------- MENU ---------- */
+  .menu{ background:var(--paper-deep); padding:100px 0; border-top:1px solid var(--hairline); border-bottom:1px solid var(--hairline); }
+  .menu .label{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--rust); }
+  .menu h2{ font-size:clamp(30px, 4vw, 40px); margin-top:10px; margin-bottom:8px; color:var(--ink); }
+  .menu .sub{ font-size:14.5px; color:var(--ink-soft); margin-bottom:40px; max-width:520px; line-height:1.6; }
+
+  /* ---------- FREE RESOURCES / MY TOOLS ---------- */
+  .resources{ background:var(--paper-deep); padding:100px 0; border-top:1px solid var(--hairline); border-bottom:1px solid var(--hairline); }
+  .resources .label{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--rust); }
+  .resources h2{ font-size:clamp(30px, 4vw, 40px); margin-top:10px; margin-bottom:14px; color:var(--ink); }
+  .resources .sub{ font-size:14.5px; color:var(--ink-soft); margin-bottom:40px; max-width:520px; line-height:1.6; }
+
+  /* ---------- SWIPE CAROUSEL (shared by menu + tools) ---------- */
+  .carousel{ position:relative; }
+  .carousel-track{
+    display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+    padding-bottom:8px; margin:0 -32px; padding-left:32px; padding-right:32px; scrollbar-width:none;
+  }
+  @media (max-width:640px){ .carousel-track{ margin:0 -22px; padding-left:22px; padding-right:22px; } }
+  .carousel-track::-webkit-scrollbar{ display:none; }
+  .carousel-card{
+    scroll-snap-align:start; flex:0 0 auto; width:280px; background:var(--paper); border:1px solid var(--hairline);
+    border-radius:10px; padding:24px 22px; display:flex; flex-direction:column;
+  }
+  .carousel-card .tag{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--rust); white-space:nowrap;
+    align-self:flex-start; border:1px solid var(--hairline); padding:3px 10px; border-radius:20px; margin-bottom:14px;
+  }
+  .carousel-card h3{ font-size:18px; color:var(--ink); line-height:1.3; }
+  .carousel-card p{ font-size:13.5px; color:var(--ink-soft); margin-top:10px; line-height:1.6; flex:1; }
+  .carousel-card .open-link{
+    margin-top:16px; font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--rust-soft);
+    text-decoration:none; align-self:flex-start; border-bottom:1px solid transparent; transition:border-color .15s ease;
+  }
+  .carousel-card .open-link:hover{ border-color:var(--rust-soft); }
+  .carousel-nav{ display:flex; gap:10px; margin-top:20px; }
+  .carousel-nav button{
+    width:36px; height:36px; border-radius:50%; border:1px solid var(--hairline); background:none; color:var(--ink);
+    font-size:15px; cursor:pointer; transition:background .15s ease, color .15s ease;
+  }
+  .carousel-nav button:hover{ background:var(--ink); color:var(--paper); }
+  .carousel-hint{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--ink-soft); margin-top:20px; }
+  @media (min-width:641px){ .carousel-hint{ display:none; } }
+
+  /* ---------- FEATURED POST ---------- */
+  .featured{ padding:104px 0; }
+  .featured .label{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--rust); }
+  .featured h2{ font-size:clamp(30px, 4vw, 40px); margin-top:10px; margin-bottom:40px; color:var(--ink); }
+  .feat-card{
+    display:grid; grid-template-columns: 0.9fr 1.1fr; gap:0; border:1px solid var(--hairline); border-radius:12px;
+    overflow:hidden; background:var(--paper-deep); text-decoration:none; color:inherit;
+  }
+  @media (max-width:780px){ .feat-card{ grid-template-columns:1fr; } }
+  .feat-card .feat-img{ aspect-ratio:16/10; overflow:hidden; }
+  @media (max-width:780px){ .feat-card .feat-img{ aspect-ratio:16/9; } }
+  .feat-card .feat-img img, .feat-card .feat-img svg{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .3s ease; }
+  .feat-card:hover .feat-img img, .feat-card:hover .feat-img svg{ transform:scale(1.03); }
+  .feat-card .feat-body{ padding:34px 34px; display:flex; flex-direction:column; justify-content:center; }
+  .feat-card .feat-kicker{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--rust-soft); letter-spacing:0.05em; margin-bottom:14px; }
+  .feat-card h3{ font-size:clamp(20px,3vw,26px); line-height:1.3; color:var(--ink); }
+  .feat-card .feat-deck{ font-size:14.5px; color:var(--ink-soft); margin-top:14px; line-height:1.6; }
+  .feat-card .feat-read{ margin-top:20px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--rust-soft); }
+
+  /* ---------- NEWSLETTER ---------- */
+  .newsletter{ padding:96px 0; text-align:center; }
+  .newsletter .label{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--rust); }
+  .newsletter h2{ font-size:clamp(28px, 4.5vw, 38px); margin-top:10px; color:var(--ink); max-width:520px; margin-left:auto; margin-right:auto; line-height:1.25; }
+  .newsletter .sub{ font-size:14.5px; color:var(--ink-soft); margin-top:16px; max-width:440px; margin-left:auto; margin-right:auto; line-height:1.6; }
+  .nl-form{ margin-top:30px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
+  .nl-form input[type=email]{
+    font-family:'Work Sans', sans-serif; font-size:14.5px; padding:13px 16px; border:1px solid var(--ink);
+    border-radius:4px; width:280px; max-width:80vw; background:var(--paper); color:var(--ink);
+  }
+  .nl-form input[type=email]:focus{ outline:2px solid var(--rust); outline-offset:1px; }
+  .nl-form button{
+    font-family:'Work Sans', sans-serif; font-weight:600; font-size:14.5px; padding:13px 24px; border:none;
+    border-radius:4px; background:var(--rust); color:var(--espresso-soft); cursor:pointer; transition:background .15s ease;
+  }
+  .nl-form button:hover{ background:var(--rust-soft); }
+  .nl-note{ margin-top:14px; font-size:12.5px; color:var(--ink-soft); min-height:16px; }
+
+  /* ---------- FOLLOW ---------- */
+  .follow{ background:var(--espresso); color:var(--cream-text); padding:96px 0; text-align:center; }
+  .follow h2{ font-size:clamp(32px, 5vw, 48px); color:var(--cream-text); max-width:640px; margin:0 auto; line-height:1.2; }
+  .follow .sub{ font-size:15.5px; color:var(--cream-soft); margin-top:18px; max-width:460px; margin-left:auto; margin-right:auto; line-height:1.6; }
+  .follow .cta-primary{ margin-top:32px; display:inline-block; }
+
+  /* ---------- FOOTER ---------- */
+  footer{ background:var(--espresso-soft); color:var(--cream-soft); padding:28px 0; }
+  footer .wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+  footer p{ font-size:12px; line-height:1.6; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <span class="wordmark">Tea and Toxins</span>
+    <a class="ig" href="https://instagram.com/tea.and.toxins" target="_blank" rel="noopener">@tea.and.toxins</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">Emergency medicine, unfiltered</span>
+      <h1>Tea and <em>Toxins</em></h1>
+      <p class="tagline">Gossiping about the ER, one tea break at a time — stories, systems, and the occasional public-health rant, from a resident who's lived through the chaos.</p>
+      <div class="cta-row">
+        <a class="cta-primary" href="https://instagram.com/tea.and.toxins" target="_blank" rel="noopener">Follow along on Instagram</a>
+        <a class="cta-secondary" href="#about">Read the story</a>
+      </div>
+    </div>
+    <div class="art" aria-hidden="true">
+      <svg viewBox="0 0 300 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- steam as an EKG line -->
+        <path id="steamLine" d="M60 70 L85 70 L95 40 L108 100 L120 70 L300 70" stroke="#C97B54" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- teacup -->
+        <path d="M40 120 h150 v42 c0 34 -33 60 -75 60 s-75 -26 -75 -60 z" stroke="#F4ECDF" stroke-width="4" fill="none"/>
+        <path d="M190 132 c26 0 44 16 44 36 s-18 36 -44 36" stroke="#F4ECDF" stroke-width="4" fill="none"/>
+        <ellipse cx="115" cy="120" rx="75" ry="11" stroke="#F4ECDF" stroke-width="4" fill="#1B120D"/>
+        <!-- saucer -->
+        <ellipse cx="115" cy="228" rx="98" ry="10" stroke="#5B4A3B" stroke-width="3" fill="none"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="wrap">
+    <div>
+      <span class="label">Written between shifts</span>
+    </div>
+    <div class="body">
+      <h2>Most days start in a trauma bay<br>and end with a half-finished cup of tea.</h2>
+      <p style="margin-top:22px;">I'm Dr. Shifana, a final-year resident in Emergency Medicine in Tamil Nadu. Tea and Toxins is where the two halves of that sentence collide — the unfiltered version of what actually happens on shift, next to the structured, pattern-based systems I built to survive my own training.</p>
+      <p>It started as a way to make sense of my own exam prep. It's slowly turned into a place for anyone training in Indian emergency medicine — and for anyone who's ever ended up on the other side of that trauma bay and wanted to understand what was happening to them.</p>
+      <div class="cred">Dr. Shifana · MD (Emergency Medicine), Final Year<br>Tamil Nadu, India</div>
+    </div>
+  </div>
+</section>
+
+<section class="menu" id="content">
+  <div class="wrap">
+    <span class="label">What's on the menu</span>
+    <h2>Three things, poured regularly</h2>
+    <p class="sub">Swipe through — new stories and systems land here between shifts.</p>
+
+    <div class="carousel">
+      <div class="carousel-track" id="menuTrack">
+        <div class="carousel-card">
+          <span class="tag">daily brew</span>
+          <h3>ER Gossip</h3>
+          <p>The messy, funny, occasionally heartbreaking things that happen on shift — told the way residents actually talk about them on a break, not the way a textbook would.</p>
+        </div>
+        <div class="carousel-card">
+          <span class="tag">exam season</span>
+          <h3>The Systemized Resident</h3>
+          <p>Structured, high-yield systems for cracking Emergency Medicine postgraduate exams — because nobody actually teaches you how to study for this.</p>
+        </div>
+        <div class="carousel-card">
+          <span class="tag">weekly</span>
+          <h3>Health, Explained</h3>
+          <p>Plain-language health education for the people who end up in the ER — not just the doctors treating them.</p>
+        </div>
+      </div>
+      <div class="carousel-nav">
+        <button type="button" aria-label="Scroll left" data-scroll="-1" data-target="menuTrack">←</button>
+        <button type="button" aria-label="Scroll right" data-scroll="1" data-target="menuTrack">→</button>
+      </div>
+      <p class="carousel-hint">← swipe →</p>
+    </div>
+  </div>
+</section>
+
+<section class="featured" id="featured">
+  <div class="wrap">
+    <span class="label">Worth the whole tea break</span>
+    <h2>Featured</h2>
+    <a class="feat-card" href="ai-revolutionizing-healthcare.html">
+      <div class="feat-img">
+        <svg viewBox="0 0 600 375" role="img" aria-label="Illustration of a hospital monitor displaying a scan with an AI-flagged region, with a queue of patients waiting in the corridor." xmlns="http://www.w3.org/2000/svg">
+          <rect width="600" height="375" fill="#1B120D"/>
+          <line x1="30" y1="345" x2="470" y2="345" stroke="#5B4A3B" stroke-width="2" opacity="0.5"/>
+          <g stroke="#F4ECDF" fill="none" stroke-width="2.2">
+            <g opacity="0.9"><circle cx="68" cy="300" r="11"/><rect x="57" y="311" width="22" height="40" rx="10"/></g>
+            <g opacity="0.7"><circle cx="106" cy="306" r="9"/><rect x="97" y="315" width="18" height="34" rx="9"/></g>
+            <g opacity="0.55"><circle cx="138" cy="311" r="7.5"/><rect x="130.5" y="318.5" width="15" height="28" rx="7.5"/></g>
+            <g opacity="0.4"><circle cx="166" cy="315" r="6"/><rect x="160" y="321" width="12" height="22" rx="6"/></g>
+          </g>
+          <rect x="140" y="50" width="320" height="210" rx="14" fill="#2A1E15" stroke="#F4ECDF" stroke-opacity="0.12" stroke-width="2"/>
+          <rect x="280" y="260" width="40" height="14" fill="#2A1E15" stroke="#5B4A3B" stroke-width="2"/>
+          <ellipse cx="300" cy="282" rx="70" ry="9" fill="none" stroke="#5B4A3B" stroke-width="3"/>
+          <rect x="162" y="72" width="276" height="150" rx="6" fill="#0D0805"/>
+          <path d="M180 150 L220 150 L235 108 L252 182 L266 88 L282 150 L420 150" stroke="#C97B54" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="221" y="93" width="56" height="98" fill="none" stroke="#E3A47E" stroke-width="1.5" stroke-dasharray="4 4" rx="3"/>
+          <text x="221" y="86" font-family="'IBM Plex Mono', monospace" font-size="10" fill="#E3A47E">anomaly · 98%</text>
+        </svg>
+      </div>
+      <div class="feat-body">
+        <span class="feat-kicker">AI &amp; MEDICINE</span>
+        <h3>The Most Revolutionary AI in Healthcare Isn't Diagnosing Patients. It's Finding Them.</h3>
+        <p class="feat-deck">What 100,000 chest X-rays in Goa taught me about where AI in medicine actually earns its keep — and where it still doesn't belong anywhere near a patient.</p>
+        <span class="feat-read">Read the full piece ↗</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<section class="resources" id="tools">
+  <div class="wrap">
+    <span class="label">Take one with you</span>
+    <h2>My Tools</h2>
+    <p class="sub">Structured references and playable tools built while training — swipe through, cleaned up for anyone to use.</p>
+
+    <div class="carousel">
+      <div class="carousel-track" id="toolsTrack">
+        <div class="carousel-card">
+          <span class="tag">calculator</span>
+          <h3>DiaPredict</h3>
+          <p>Bedside diaphragm-ultrasound mortality risk for AECOPD, alongside BAP-65 and DECAF.</p>
+          <a class="open-link" href="diapredict.html" target="_blank" rel="noopener">open tool ↗</a>
+        </div>
+        <div class="carousel-card">
+          <span class="tag">dashboard</span>
+          <h3>ER Command Center</h3>
+          <p>A live bed dashboard across Red Zone and HDU — occupancy, status, and what needs attention now.</p>
+          <a class="open-link" href="ertracker.html" target="_blank" rel="noopener">open tool ↗</a>
+        </div>
+        <div class="carousel-card">
+          <span class="tag">quiz</span>
+          <h3>What's My ER Personality?</h3>
+          <p>A quick, shareable quiz for figuring out which flavor of chaos you'd bring to a shift.</p>
+          <a class="open-link" href="er-personality-quiz.html" target="_blank" rel="noopener">take quiz ↗</a>
+        </div>
+        <div class="carousel-card">
+          <span class="tag">game</span>
+          <h3>Toxidrome Detective</h3>
+          <p>Twelve toxidrome cases to work up like a real shift — gather clues, commit to a diagnosis, get scored.</p>
+          <a class="open-link" href="toxidrome-detective.html" target="_blank" rel="noopener">play game ↗</a>
+        </div>
+        <div class="carousel-card">
+          <span class="tag">game</span>
+          <h3>ER or Not?</h3>
+          <p>Ten real symptom scenarios. Guess ER, doctor tomorrow, or fine — then see what an ER resident would actually do.</p>
+          <a class="open-link" href="er-or-not.html" target="_blank" rel="noopener">play game ↗</a>
+        </div>
+      </div>
+      <div class="carousel-nav">
+        <button type="button" aria-label="Scroll left" data-scroll="-1" data-target="toolsTrack">←</button>
+        <button type="button" aria-label="Scroll right" data-scroll="1" data-target="toolsTrack">→</button>
+      </div>
+      <p class="carousel-hint">← swipe →</p>
+    </div>
+  </div>
+</section>
+
+<section class="newsletter">
+  <div class="wrap">
+    <span class="label">Stay in the loop</span>
+    <h2>New posts and tools, straight to your inbox.</h2>
+    <p class="sub">No spam — just what's new here, whenever there's something worth sending.</p>
+    <form class="nl-form" id="nlForm">
+      <input type="email" id="nlEmail" placeholder="you@email.com" required>
+      <button type="submit">Sign up</button>
+    </form>
+    <div class="nl-note" id="nlNote"></div>
+  </div>
+</section>
+
+<section class="follow">
+  <div class="wrap">
+    <h2>Come sit with the chaos.</h2>
+    <p class="sub">New stories and systems, posted between shifts. No spam, just tea and the occasional toxin.</p>
+    <a class="cta-primary" href="https://instagram.com/tea.and.toxins" target="_blank" rel="noopener">Follow @tea.and.toxins</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Tea and Toxins — Dr. Shifana, MD (Emergency Medicine)<br>Tamil Nadu, India</p>
+    <p>Brewed between shifts.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var line = document.getElementById('steamLine');
+  if (!line || !line.getTotalLength) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var len = line.getTotalLength();
+  line.style.strokeDasharray = len;
+  line.style.strokeDashoffset = len;
+  // force a reflow so the browser registers the starting state before transitioning
+  line.getBoundingClientRect();
+  line.style.transition = 'stroke-dashoffset 1.6s ease-out 0.2s';
+  requestAnimationFrame(function(){ line.style.strokeDashoffset = '0'; });
+})();
+
+// Carousel arrow buttons — the swipe itself is native touch scrolling;
+// these just give desktop/mouse users a click alternative.
+(function(){
+  document.querySelectorAll('.carousel-nav button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var track = document.getElementById(btn.getAttribute('data-target'));
+      if (!track) return;
+      var dir = parseInt(btn.getAttribute('data-scroll'), 10) || 1;
+      var card = track.querySelector('.carousel-card');
+      var step = card ? (card.getBoundingClientRect().width + 16) : 280;
+      track.scrollBy({ left: dir * step, behavior: 'smooth' });
+    });
+  });
+})();
+
+// Newsletter form — no email service connected yet.
+// Once you set up Mailchimp / ConvertKit / a Google Form, replace this handler
+// with a real form POST to that service's endpoint.
+(function(){
+  var form = document.getElementById('nlForm');
+  var note = document.getElementById('nlNote');
+  if (!form) return;
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    note.textContent = "Thanks! Signups aren't wired up to an inbox yet — check back soon.";
+    note.style.color = '#C97B54';
+    form.reset();
+  });
+})();
+</script>
+</body>
+</html>
