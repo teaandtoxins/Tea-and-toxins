@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Toxidrome Detective</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔎</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070a0e;
+    --panel:rgba(255,255,255,.045);
+    --panel-strong:rgba(255,255,255,.075);
+    --border:rgba(255,255,255,.09);
+    --red:#ff3b4e;
+    --red-glow:rgba(255,59,78,.35);
+    --amber:#ffb020;
+    --amber-glow:rgba(255,176,32,.3);
+    --text:#eef1f6;
+    --dim:#8b93a8;
+    --dim-2:#565c6c;
+    --mono:'IBM Plex Mono', monospace;
+    --disp:'Space Grotesk', sans-serif;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    background:
+      radial-gradient(70% 50% at 50% 0%, rgba(255,59,78,.09), transparent 60%),
+      radial-gradient(50% 40% at 90% 100%, rgba(255,176,32,.05), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    min-height:100dvh;
+    display:flex; justify-content:center;
+    overflow-x:hidden;
+  }
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;} }
+
+  #app{ width:100%; max-width:520px; min-height:100dvh; position:relative; display:flex; flex-direction:column; }
+
+  /* ambient grid + ECG */
+  .bg-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+    background-size:34px 34px;
+    mask-image:radial-gradient(70% 60% at 50% 20%, black, transparent 80%);
+  }
+  .bg-ecg{ position:fixed; inset:0; z-index:0; opacity:.14; pointer-events:none; display:flex; align-items:center; justify-content:center; }
+  .bg-ecg svg{ width:150%; max-width:1000px; }
+  .bg-ecg path{ fill:none; stroke:var(--red); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:1500; stroke-dashoffset:1500; animation:draw 4s ease-in-out infinite; }
+  @keyframes draw{ 0%{stroke-dashoffset:1500;} 55%{stroke-dashoffset:0;} 100%{stroke-dashoffset:-1500;} }
+
+  .screen{ position:relative; z-index:1; flex:1; display:flex; flex-direction:column; padding:0 20px 40px; animation:fadeIn .45s ease both; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+  .hidden{ display:none !important; }
+
+  /* ---------- TOP NAV ---------- */
+  .topnav{
+    position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between;
+    padding:16px 20px; background:rgba(7,10,14,.85); backdrop-filter:blur(8px); border-bottom:1px solid var(--border);
+  }
+  .topnav .brand{ font-family:var(--disp); font-weight:700; font-size:14.5px; letter-spacing:.02em; }
+  .topnav .links{ display:flex; gap:16px; }
+  .topnav button{
+    appearance:none; background:none; border:none; color:var(--dim); font-family:var(--mono); font-size:11.5px;
+    letter-spacing:.04em; cursor:pointer; padding:4px 0;
+  }
+  .topnav button:hover{ color:var(--text); }
+
+  /* ---------- LANDING ---------- */
+  #landing{ justify-content:center; text-align:center; padding-top:0; flex:1; }
+  .land-eyebrow{ font-family:var(--mono); font-size:11.5px; letter-spacing:.14em; color:var(--amber); margin-bottom:22px; }
+  .land-title{ font-family:var(--disp); font-weight:700; font-size:clamp(38px,10vw,54px); line-height:1.0; letter-spacing:-.01em; }
+  .land-title .accent{ color:var(--red); text-shadow:0 0 24px var(--red-glow); }
+  .land-sub{ font-style:italic; color:var(--dim); font-size:15.5px; line-height:1.55; max-width:300px; margin:22px auto 0; }
+  .land-steps{ display:flex; justify-content:center; gap:18px; margin:30px 0 8px; font-family:var(--mono); font-size:11px; color:var(--dim-2); letter-spacing:.06em; }
+  .cta-primary{
+    appearance:none; border:none; cursor:pointer; font-family:var(--disp); font-weight:700; font-size:15.5px;
+    color:#0a0508; background:linear-gradient(135deg,#ff5063,var(--red)); padding:17px 26px; border-radius:10px;
+    box-shadow:0 14px 30px -10px var(--red-glow); width:100%; letter-spacing:.03em; transition:transform .15s ease;
+  }
+  .cta-primary:active{ transform:scale(.97); }
+  .cta-ghost{
+    appearance:none; border:1px solid var(--border); cursor:pointer; background:var(--panel); color:var(--text);
+    font-family:var(--disp); font-weight:600; font-size:14px; padding:14px 22px; border-radius:10px; width:100%;
+  }
+  .land-foot{ margin-top:34px; font-family:var(--mono); font-size:11px; color:var(--dim-2); letter-spacing:.05em; }
+
+  /* ---------- LIBRARY ---------- */
+  .lib-hero{ padding:26px 0 8px; }
+  .lib-hero .streak-pill{
+    display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12px; color:var(--amber);
+    background:rgba(255,176,32,.08); border:1px solid rgba(255,176,32,.25); padding:6px 12px; border-radius:100px; margin-bottom:14px;
+  }
+  .lib-hero h2{ font-family:var(--disp); font-weight:700; font-size:24px; margin:0 0 6px; }
+  .lib-hero p{ color:var(--dim); font-size:13.5px; line-height:1.5; margin:0 0 20px; }
+
+  .random-btn{
+    display:flex; align-items:center; justify-content:center; gap:10px; width:100%;
+    background:linear-gradient(135deg, rgba(255,59,78,.16), rgba(255,176,32,.10));
+    border:1px solid rgba(255,59,78,.3); border-radius:14px; padding:16px; margin-bottom:12px;
+    font-family:var(--disp); font-weight:700; font-size:15px; color:var(--text); cursor:pointer;
+  }
+  .twist-btn{
+    display:flex; align-items:center; justify-content:center; gap:10px; width:100%;
+    background:var(--panel); border:1px dashed var(--amber); border-radius:14px; padding:15px; margin-bottom:26px;
+    font-family:var(--disp); font-weight:600; font-size:13.5px; color:var(--amber); cursor:pointer;
+  }
+
+  .section-label{ font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; color:var(--dim); margin:22px 0 12px; }
+  .case-grid{ display:flex; flex-direction:column; gap:10px; }
+  .case-card{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px;
+    cursor:pointer; text-align:left; width:100%; transition:transform .12s ease, border-color .15s ease;
+  }
+  .case-card:active{ transform:scale(.985); }
+  .case-card:not(.locked):hover{ border-color:rgba(255,59,78,.35); background:var(--panel-strong); }
+  .case-card .cc-left h3{ font-family:var(--disp); font-weight:600; font-size:15.5px; margin:0 0 4px; }
+  .case-card .cc-left p{ font-size:12px; color:var(--dim); margin:0; }
+  .case-card .cc-right{ font-family:var(--mono); font-size:11px; color:var(--dim-2); white-space:nowrap; }
+  .case-card.solved .cc-right{ color:#4ade80; }
+  .case-card.locked{ opacity:.55; cursor:not-allowed; }
+  .case-card.locked .cc-right{ color:var(--amber); }
+
+  /* ---------- CASE INTRO ---------- */
+  #caseIntro{ justify-content:center; }
+  .intro-tag{ font-family:var(--mono); font-size:12.5px; color:var(--red); letter-spacing:.08em; margin-bottom:6px; }
+  .intro-time{ font-family:var(--mono); font-size:12px; color:var(--dim); margin-bottom:26px; }
+  .intro-story{
+    font-family:var(--disp); font-weight:500; font-size:19px; line-height:1.5; font-style:italic; color:var(--text);
+    border-left:2px solid var(--red); padding-left:16px; margin-bottom:34px;
+  }
+  #caseIntro .cta-primary{ margin-bottom:12px; }
+
+  /* ---------- EXAM SCREEN ---------- */
+  .exam-header{ padding-top:20px; margin-bottom:16px; }
+  .exam-header .tag{ font-family:var(--mono); font-size:11.5px; color:var(--dim); }
+  .exam-header h2{ font-family:var(--disp); font-size:19px; font-weight:600; margin:4px 0 0; }
+  .exam-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+  .exam-card{
+    background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 12px;
+    cursor:pointer; text-align:left; transition:transform .12s ease, border-color .15s ease;
+  }
+  .exam-card:active{ transform:scale(.97); }
+  .exam-card .ec-icon{ font-size:19px; display:block; margin-bottom:6px; }
+  .exam-card .ec-label{ font-family:var(--disp); font-weight:600; font-size:13px; display:block; margin-bottom:4px; }
+  .exam-card .ec-finding{ font-size:12px; color:var(--dim); line-height:1.4; display:none; }
+  .exam-card.opened{ border-color:rgba(255,59,78,.35); background:var(--panel-strong); }
+  .exam-card.opened .ec-finding{ display:block; animation:fadeIn .3s ease both; }
+  .exam-card.opened .ec-label{ color:var(--amber); }
+  .exam-hint{ font-size:12px; color:var(--dim-2); text-align:center; margin-bottom:14px; }
+  .exam-nav{ margin-top:auto; padding-top:10px; display:flex; flex-direction:column; gap:10px; }
+
+  /* ---------- DIAGNOSIS ---------- */
+  .dx-title{ font-family:var(--disp); font-weight:700; font-size:22px; margin:20px 0 18px; }
+  .dx-options{ display:flex; flex-direction:column; gap:9px; margin-bottom:26px; }
+  .dx-opt{
+    background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:14px 16px;
+    font-size:14.5px; color:var(--text); cursor:pointer; text-align:left; transition:border-color .15s ease, background .15s ease;
+  }
+  .dx-opt.selected{ border-color:var(--red); background:rgba(255,59,78,.1); }
+  .conf-label{ font-family:var(--mono); font-size:11.5px; letter-spacing:.08em; color:var(--dim); margin-bottom:10px; }
+  .conf-row{ display:flex; gap:8px; margin-bottom:28px; }
+  .conf-opt{
+    flex:1; background:var(--panel); border:1px solid var(--border); border-radius:100px; padding:11px 6px;
+    font-size:12.5px; text-align:center; cursor:pointer; color:var(--dim);
+  }
+  .conf-opt.selected{ border-color:var(--amber); color:var(--amber); background:rgba(255,176,32,.08); }
+  .lockin-btn:disabled{ opacity:.4; cursor:not-allowed; }
+
+  /* ---------- RESULTS ---------- */
+  .res-block{ opacity:0; animation:fadeIn .55s ease forwards; }
+  .res-block:nth-of-type(1){ animation-delay:.05s; }
+  .res-block:nth-of-type(2){ animation-delay:.35s; }
+  .res-block:nth-of-type(3){ animation-delay:.65s; }
+  .res-block:nth-of-type(4){ animation-delay:.95s; }
+  .res-block:nth-of-type(5){ animation-delay:1.25s; }
+  .res-block:nth-of-type(6){ animation-delay:1.55s; }
+
+  .verdict-banner{ text-align:center; padding:34px 0 22px; }
+  .verdict-tag{ font-family:var(--mono); font-size:12px; letter-spacing:.12em; color:var(--dim); margin-bottom:10px; }
+  .verdict-icon{ font-size:44px; margin-bottom:10px; }
+  .verdict-name{
+    font-family:var(--disp); font-weight:700; font-size:clamp(24px,7vw,30px); line-height:1.1;
+    background:linear-gradient(135deg,#fff,#ffd0b4); -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .verdict-quote{ font-style:italic; color:var(--dim); font-size:14.5px; line-height:1.55; max-width:320px; margin:16px auto 0; }
+  .verdict-status{ display:inline-block; margin-top:16px; font-family:var(--mono); font-size:11.5px; padding:6px 14px; border-radius:100px; letter-spacing:.05em; }
+  .verdict-status.correct{ background:rgba(74,222,128,.1); color:#4ade80; border:1px solid rgba(74,222,128,.3); }
+  .verdict-status.incorrect{ background:rgba(255,59,78,.1); color:var(--red); border:1px solid rgba(255,59,78,.3); }
+
+  .compare-table{ width:100%; border-collapse:collapse; margin-bottom:6px; }
+  .compare-table th{ font-family:var(--mono); font-size:10.5px; color:var(--dim); text-align:left; padding:8px 6px; letter-spacing:.04em; border-bottom:1px solid var(--border); }
+  .compare-table td{ font-size:12.5px; padding:10px 6px; border-bottom:1px solid var(--border); color:var(--text); }
+  .compare-table td:first-child{ color:var(--dim); font-size:12px; }
+
+  .why-box{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px; margin:22px 0; }
+  .why-box h4{ font-family:var(--mono); font-size:11.5px; letter-spacing:.08em; color:var(--amber); margin:0 0 10px; }
+  .why-box p{ font-size:14px; line-height:1.6; color:var(--text); margin:0; }
+  .pattern-line{ font-family:var(--disp); font-weight:500; font-size:14.5px; color:var(--red); text-align:center; margin:18px 0 26px; line-height:1.5; }
+
+  .mgmt-label{ font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; color:var(--dim); margin-bottom:12px; }
+  .mgmt-grid{ display:flex; flex-direction:column; gap:9px; margin-bottom:24px; }
+  .mgmt-card{ background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
+  .mgmt-card .mn{ font-family:var(--mono); font-size:11px; color:var(--amber); }
+  .mgmt-card h5{ font-family:var(--disp); font-size:14px; font-weight:600; margin:4px 0 6px; }
+  .mgmt-card p{ font-size:12.5px; color:var(--dim); line-height:1.5; margin:0; }
+  .mgmt-disclaimer{ font-size:11px; color:var(--dim-2); line-height:1.5; margin-bottom:26px; font-style:italic; }
+
+  .score-box{ background:linear-gradient(135deg, rgba(255,59,78,.08), rgba(255,176,32,.05)); border:1px solid rgba(255,59,78,.2); border-radius:16px; padding:22px; margin-bottom:20px; text-align:center; }
+  .score-label{ font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; color:var(--dim); margin-bottom:6px; }
+  .score-big{ font-family:var(--disp); font-weight:700; font-size:44px; line-height:1; }
+  .score-title{ font-family:var(--mono); font-size:12.5px; color:var(--amber); letter-spacing:.06em; margin-top:6px; }
+  .score-rows{ text-align:left; margin-top:18px; display:flex; flex-direction:column; gap:9px; }
+  .score-row{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--dim); }
+  .score-row span:last-child{ color:var(--text); font-family:var(--mono); }
+  .streak-line{ margin-top:16px; font-family:var(--mono); font-size:12px; color:var(--amber); }
+
+  .res-actions{ display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+
+  /* ---------- SHARE ---------- */
+  #shareCanvas{ display:none; }
+  .toast{
+    position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px);
+    background:#151a23; border:1px solid var(--border); color:var(--text); padding:12px 18px; border-radius:100px;
+    font-size:13.5px; z-index:50; opacity:0; transition:opacity .25s ease, transform .25s ease; box-shadow:0 10px 30px rgba(0,0,0,.4);
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ---------- MODAL ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; z-index:60; background:rgba(4,5,8,.78); backdrop-filter:blur(4px);
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .modal-sheet{
+    width:100%; max-width:520px; background:#0d1117; border:1px solid var(--border); border-radius:20px 20px 0 0;
+    padding:26px 22px 34px; animation:slideUp .3s ease both;
+  }
+  @keyframes slideUp{ from{ transform:translateY(30px); opacity:0;} to{ transform:translateY(0); opacity:1;} }
+  .modal-sheet h3{ font-family:var(--disp); font-size:18px; margin:0 0 12px; }
+  .modal-sheet p{ font-size:13.5px; color:var(--dim); line-height:1.6; margin:0 0 10px; }
+  .modal-close{ appearance:none; border:1px solid var(--border); background:var(--panel); color:var(--text); font-family:var(--disp); font-weight:600; font-size:14px; padding:13px; border-radius:10px; width:100%; margin-top:14px; cursor:pointer; }
+  .modal-reset{ appearance:none; border:none; background:none; color:var(--dim-2); font-size:12px; text-decoration:underline; cursor:pointer; padding:6px 0; }
+</style>
+</head>
+<body>
+
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-ecg" aria-hidden="true">
+  <svg viewBox="0 0 900 200" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,100 L150,100 L175,100 L190,40 L205,160 L220,20 L235,100 L260,100 L400,100 L420,100 L440,60 L460,140 L480,20 L500,100 L520,100 L900,100" />
+  </svg>
+</div>
+
+<div id="app">
+
+  <!-- NAV (hidden on landing) -->
+  <div class="topnav hidden" id="topnav">
+    <span class="brand">TOXIDROME DETECTIVE</span>
+    <div class="links">
+      <button id="navCases">Cases</button>
+      <button id="navStreak">Streak</button>
+      <button id="navAbout">About</button>
+    </div>
+  </div>
+
+  <!-- LANDING -->
+  <section id="landing" class="screen">
+    <span class="land-eyebrow">TEA &amp; TOXINS · THE ER PLAYBOOK</span>
+    <h1 class="land-title">TOXIDROME<br><span class="accent">DETECTIVE</span></h1>
+    <p class="land-sub">"The poison won't tell you what it is.<br>Your patient will."</p>
+    <div class="land-steps"><span>OBSERVE</span><span>·</span><span>CONNECT</span><span>·</span><span>DIAGNOSE</span></div>
+    <div style="margin-top:30px;">
+      <button class="cta-primary" id="startBtn">START INVESTIGATION</button>
+    </div>
+    <p class="land-foot">Can you identify the toxidrome before the clues disappear?</p>
+  </section>
+
+  <!-- LIBRARY -->
+  <section id="library" class="screen hidden">
+    <div class="lib-hero">
+      <span class="streak-pill" id="libStreakPill">🔥 0 case streak</span>
+      <h2>Choose your case</h2>
+      <p>Six classic toxidromes to start. Advanced cases unlock once you've cracked three.</p>
+    </div>
+
+    <button class="random-btn" id="randomBtn">🎲 RANDOM TOX</button>
+    <button class="twist-btn" id="twistBtn">⚡ ONE CLUE CHANGES EVERYTHING</button>
+
+    <div class="section-label">CLASSIC TOXIDROMES</div>
+    <div class="case-grid" id="classicGrid"></div>
+
+    <div class="section-label">ADVANCED CASES</div>
+    <div class="case-grid" id="advancedGrid"></div>
+  </section>
+
+  <!-- CASE INTRO -->
+  <section id="caseIntro" class="screen hidden">
+    <span class="intro-tag" id="introTag">CASE #01</span>
+    <span class="intro-time" id="introTime">03:17 AM — Emergency Department</span>
+    <p class="intro-story" id="introStory"></p>
+    <button class="cta-primary" id="enterCaseBtn">ENTER THE CASE</button>
+    <button class="cta-ghost" id="introBackBtn">← back to cases</button>
+  </section>
+
+  <!-- EXAM -->
+  <section id="exam" class="screen hidden">
+    <div class="exam-header">
+      <span class="tag" id="examTag">CASE #01 · EXAMINATION</span>
+      <h2>Gather your clues</h2>
+    </div>
+    <div class="exam-grid" id="examGrid"></div>
+    <p class="exam-hint" id="examHint">Open at least 3 findings before you commit to a diagnosis.</p>
+    <div class="exam-nav">
+      <button class="cta-primary" id="toDxBtn" disabled>MAKE MY DIAGNOSIS</button>
+    </div>
+  </section>
+
+  <!-- DIAGNOSIS -->
+  <section id="diagnosis" class="screen hidden">
+    <h2 class="dx-title">WHAT'S YOUR CALL?</h2>
+    <div class="dx-options" id="dxOptions"></div>
+    <div class="conf-label">CONFIDENCE</div>
+    <div class="conf-row" id="confRow">
+      <button class="conf-opt" data-c="low">Low</button>
+      <button class="conf-opt" data-c="moderate">Moderate</button>
+      <button class="conf-opt" data-c="high">High</button>
+    </div>
+    <button class="cta-primary lockin-btn" id="lockInBtn" disabled>LOCK IN DIAGNOSIS</button>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" class="screen hidden">
+    <div class="res-block verdict-banner">
+      <div class="verdict-tag">DIAGNOSIS</div>
+      <div class="verdict-icon" id="verdictIcon">🧪</div>
+      <div class="verdict-name" id="verdictName"></div>
+      <p class="verdict-quote" id="verdictQuote"></p>
+      <span class="verdict-status" id="verdictStatus"></span>
+    </div>
+
+    <table class="compare-table res-block" id="compareTable"></table>
+
+    <div class="res-block">
+      <div class="why-box">
+        <h4>WHY THIS FITS</h4>
+        <p id="whyText"></p>
+      </div>
+      <p class="pattern-line" id="patternText"></p>
+    </div>
+
+    <div class="res-block">
+      <div class="mgmt-label">NEXT MOVE — WHAT MATTERS IN THE ED?</div>
+      <div class="mgmt-grid" id="mgmtGrid"></div>
+      <p class="mgmt-disclaimer">Educational simulation only. Real patients require clinical assessment and local toxicology/poison-center guidance.</p>
+    </div>
+
+    <div class="res-block">
+      <div class="score-box">
+        <div class="score-label">DETECTIVE SCORE</div>
+        <div class="score-big" id="scoreBig">0</div>
+        <div class="score-title" id="scoreTitle"></div>
+        <div class="score-rows" id="scoreRows"></div>
+        <div class="streak-line" id="streakLine"></div>
+      </div>
+    </div>
+
+    <div class="res-block res-actions">
+      <button class="cta-primary" id="shareBtn">📸 SHARE MY RESULT</button>
+      <button class="cta-ghost" id="nextCaseBtn">NEXT CASE</button>
+      <button class="cta-ghost" id="resToLibBtn">BACK TO CASES</button>
+    </div>
+  </section>
+
+  <!-- TWIST MODE -->
+  <section id="twist" class="screen hidden">
+    <span class="intro-tag">SPECIAL CASE · ONE CLUE CHANGES EVERYTHING</span>
+    <span class="intro-time">01:20 AM — Emergency Department</span>
+    <p class="intro-story">"A 19-year-old is brought from a music festival. He is extremely agitated, sweating heavily and repeatedly trying to remove his clothes."</p>
+    <div id="twistStage1">
+      <div class="why-box" style="margin-bottom:20px;">
+        <h4>INITIAL READ</h4>
+        <p>Tachycardia + Agitation + Mydriasis</p>
+      </div>
+      <p class="pattern-line" style="margin-bottom:28px;">Your gut says: possible sympathomimetic toxicity.</p>
+      <button class="cta-primary" id="twistRevealBtn">REVEAL THE NEXT CLUE</button>
+    </div>
+    <div id="twistStage2" class="hidden">
+      <div class="why-box" style="margin-bottom:20px; border-color: rgba(255,176,32,.35);">
+        <h4 style="color:var(--red);">NEW CLUE</h4>
+        <p>Skin is completely dry and bowel sounds are absent.</p>
+      </div>
+      <p class="pattern-line" style="margin-bottom:28px;">Now reconsider. Wet skin means sympathomimetic — dry skin flips the whole picture toward anticholinergic toxicity. The mydriasis and tachycardia were never enough on their own.</p>
+      <button class="cta-primary" id="twistDoneBtn">GOT IT — BACK TO CASES</button>
+    </div>
+  </section>
+
+</div>
+
+<canvas id="shareCanvas" width="1080" height="1080"></canvas>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= DATA ================= */
+
+const DX_OPTIONS = [
+  { key:"anticholinergic", label:"Anticholinergic" },
+  { key:"cholinergic", label:"Cholinergic" },
+  { key:"opioid", label:"Opioid" },
+  { key:"sympathomimetic", label:"Sympathomimetic" },
+  { key:"sedative", label:"Sedative-hypnotic" },
+  { key:"serotonergic", label:"Serotonergic" },
+  { key:"opioidWithdrawal", label:"Opioid withdrawal" },
+  { key:"other", label:"Other" }
+];
+const DX_LABEL = {}; DX_OPTIONS.forEach(o => DX_LABEL[o.key] = o.label);
+
+const CASES = [
+  {
+    id:"anticholinergic", category:"classic", no:1, time:"03:10 AM", setting:"Emergency Department",
+    chief:"A 22-year-old woman is brought in by roommates after being found talking to herself and picking at the air, unable to explain what happened over the last few hours.",
+    exam:{
+      mental:"Agitated, disoriented, mumbling incoherently — picking at clothing and the air.",
+      pupils:"Widely dilated, sluggish reaction to light.",
+      skin:"Hot, flushed, and completely dry to touch — no sweat anywhere, even in the axillae.",
+      cardio:"HR 128, BP 138/88 — sinus tachycardia.",
+      resp:"RR 18, SpO₂ 99% — unremarkable.",
+      gi:"Bowel sounds markedly decreased. Abdomen soft, non-tender.",
+      temp:"38.9°C",
+      ecg:"Sinus tachycardia, QRS 92ms — no significant widening."
+    },
+    correct:"anticholinergic", trueLabel:"Anticholinergic Toxidrome", icon:"🌀",
+    quote:"\u201CBlind as a bat, mad as a hatter, red as a beet, hot as a hare, dry as a bone, full as a flask.\u201D",
+    reasoning:"Delirium, dilated pupils, hot dry skin, tachycardia and decreased bowel sounds together point to blockade of central and peripheral muscarinic receptors — the classic antimuscarinic picture.",
+    pattern:"Mydriasis + Dry skin + Tachycardia + Delirium + Reduced bowel sounds → anticholinergic toxicity",
+    rows:[["Pupils","Dilated","Dilated"],["Skin","Hot &amp; dry","Hot &amp; dry"],["Heart rate","Tachycardic","Tachycardic"],["Mental status","Delirium","Delirium"],["Bowel sounds","Reduced","Reduced"]],
+    mgmt:{
+      stabilize:"Airway, breathing, circulation — cool actively if hyperthermic, and keep agitated patients safe from self-injury.",
+      identify:"Collateral history for antihistamines, TCAs, or plant alkaloids; ECG for QRS widening; blood glucose.",
+      treat:"Supportive care and benzodiazepines for agitation or seizures; consider toxin-specific therapy only when clinically indicated, alongside local toxicology guidance.",
+      watch:"Hyperthermia, seizures, arrhythmia, urinary retention."
+    }
+  },
+  {
+    id:"cholinergic", category:"classic", no:2, time:"11:42 PM", setting:"Emergency Department (rural referral)",
+    chief:"A 47-year-old farmer is brought in confused and drooling after being found collapsed near a field sprayer.",
+    exam:{
+      mental:"Confused, weak, twitching — appears frightened.",
+      pupils:"Pinpoint, barely reactive.",
+      skin:"Drenched in sweat, with excessive salivation dripping from the mouth.",
+      cardio:"HR 48, BP 96/60 — bradycardic.",
+      resp:"RR 28, audible wheeze, copious secretions — SpO₂ 91%.",
+      gi:"Hyperactive bowel sounds; incontinent of urine and stool.",
+      temp:"36.4°C",
+      ecg:"Sinus bradycardia."
+    },
+    correct:"cholinergic", trueLabel:"Cholinergic Toxidrome", icon:"💧",
+    quote:"\u201CSLUDGE and the killer B's — salivation, lacrimation, urination, defecation, GI upset, emesis; bradycardia, bronchorrhea, bronchospasm.\u201D",
+    reasoning:"Miosis, bradycardia, copious secretions, diaphoresis and hyperactive bowel sounds — in the setting of a field exposure — points to excess muscarinic and nicotinic stimulation from organophosphate or carbamate poisoning.",
+    pattern:"Miosis + Bradycardia + Secretions + Sweating + Hyperactive bowel sounds → cholinergic toxicity",
+    rows:[["Pupils","Pinpoint","Miosis"],["Skin","Diaphoretic","Diaphoretic"],["Heart rate","Bradycardic","Bradycardic"],["Secretions","Copious","Copious"],["Bowel sounds","Hyperactive","Hyperactive"]],
+    mgmt:{
+      stabilize:"Airway is the priority — secretions can rapidly compromise breathing; suction and oxygenate early.",
+      identify:"History of pesticide or nerve-agent exposure; decontaminate clothing and skin; cholinesterase levels if available.",
+      treat:"Supportive airway management, with toxin-specific therapy (antimuscarinic agents, oxime therapy) considered when clinically indicated per local toxicology guidance.",
+      watch:"Respiratory failure, seizures, prolonged weakness (intermediate syndrome)."
+    }
+  },
+  {
+    id:"opioid", category:"classic", no:3, time:"02:05 AM", setting:"Emergency Department",
+    chief:"A 29-year-old man is found unresponsive in a parking lot by a passerby who called an ambulance.",
+    exam:{
+      mental:"Minimally responsive, rousable only to painful stimuli.",
+      pupils:"Pinpoint bilaterally.",
+      skin:"Cool, slightly clammy, normal color.",
+      cardio:"HR 58, BP 102/64 — mild bradycardia.",
+      resp:"RR 6, shallow breaths, SpO₂ 84% on room air.",
+      gi:"Decreased bowel sounds.",
+      temp:"35.9°C",
+      ecg:"Sinus bradycardia, no widening."
+    },
+    correct:"opioid", trueLabel:"Opioid Toxidrome", icon:"💤",
+    quote:"\u201CThe classic triad: pinpoint pupils, depressed breathing, depressed consciousness.\u201D",
+    reasoning:"Miosis with significant respiratory depression and CNS depression is the opioid toxidrome until proven otherwise — this combination is immediately life-threatening from hypoxia alone.",
+    pattern:"Miosis + Respiratory depression + CNS depression → opioid toxicity",
+    rows:[["Pupils","Pinpoint","Miosis"],["Respiratory rate","6/min","Depressed"],["Mental status","Minimally responsive","CNS depression"],["Bowel sounds","Reduced","Reduced"]],
+    mgmt:{
+      stabilize:"Airway and ventilation first — this patient is hypoxic and needs immediate support.",
+      identify:"Look for track marks or patches, collateral history, and consider co-ingestants.",
+      treat:"Supportive ventilation, with a toxin-specific reversal agent considered when clinically indicated — titrate to adequate breathing, not full arousal, to avoid precipitating withdrawal.",
+      watch:"Recurrent sedation as any reversal wears off, aspiration, prolonged hypoxia."
+    }
+  },
+  {
+    id:"sympathomimetic", category:"classic", no:4, time:"01:20 AM", setting:"Emergency Department (post music festival)",
+    chief:"A 20-year-old man is brought from a festival, extremely agitated, sweating heavily and trying to pull his clothes off.",
+    exam:{
+      mental:"Agitated, paranoid, hyperverbal.",
+      pupils:"Dilated, reactive.",
+      skin:"Drenched in sweat, warm.",
+      cardio:"HR 142, BP 168/98 — significant hypertension and tachycardia.",
+      resp:"RR 26, SpO₂ 97%.",
+      gi:"Bowel sounds present, slightly increased.",
+      temp:"39.4°C",
+      ecg:"Sinus tachycardia."
+    },
+    correct:"sympathomimetic", trueLabel:"Sympathomimetic Toxidrome", icon:"⚡",
+    quote:"\u201CWide awake and wired — the stimulant storm.\u201D",
+    reasoning:"Mydriasis, tachycardia, hypertension, agitation and hyperthermia with wet — not dry — skin points to sympathomimetic excess rather than anticholinergic toxicity. The sweating is the key distinguishing feature.",
+    pattern:"Mydriasis + Tachycardia + Hypertension + Diaphoresis + Hyperthermia → sympathomimetic toxicity",
+    rows:[["Pupils","Dilated","Dilated"],["Skin","Wet &amp; warm","Wet &amp; warm"],["Blood pressure","168/98","Hypertensive"],["Mental status","Agitated","Agitated"]],
+    mgmt:{
+      stabilize:"Active cooling for hyperthermia, cardiac monitoring, and safe sedation for agitation.",
+      identify:"Screen for stimulant use, check for co-ingestants, ECG for arrhythmia or ischemia, CK for rhabdomyolysis.",
+      treat:"Benzodiazepines as first-line for agitation and hypertension, plus supportive cooling; consider toxin-specific therapy only when clinically indicated.",
+      watch:"Hyperthermia, seizures, rhabdomyolysis, arrhythmia, intracranial hemorrhage."
+    }
+  },
+  {
+    id:"sedative", category:"classic", no:5, time:"09:15 PM", setting:"Emergency Department",
+    chief:"A 63-year-old woman is brought in by family after they found her unusually drowsy and slurring her words following an argument earlier that day.",
+    exam:{
+      mental:"Drowsy, slurred speech, rousable to voice, confused when woken.",
+      pupils:"Normal size, reactive.",
+      skin:"Warm, dry, normal.",
+      cardio:"HR 78, BP 118/74 — normal.",
+      resp:"RR 12, SpO₂ 96% — mild hypoventilation.",
+      gi:"Bowel sounds normal.",
+      temp:"36.2°C",
+      ecg:"Normal sinus rhythm."
+    },
+    correct:"sedative", trueLabel:"Sedative-Hypnotic Toxidrome", icon:"🌙",
+    quote:"\u201CNothing dramatic — just quietly, evenly, switched off.\u201D",
+    reasoning:"Isolated CNS and mild respiratory depression without pupillary, autonomic or vital-sign extremes is the hallmark of sedative-hypnotic toxicity. The vitals are almost too normal — and that's itself the clue.",
+    pattern:"CNS depression + Near-normal vitals + Normal pupils → sedative-hypnotic toxicity",
+    rows:[["Pupils","Normal","Normal / reactive"],["Vitals","Near-normal","Near-normal"],["Mental status","Drowsy, slurred","CNS depression"],["Respiratory rate","12/min","Mild depression"]],
+    mgmt:{
+      stabilize:"Monitor airway and breathing closely — sedation can deepen unpredictably, especially with co-ingestants.",
+      identify:"Ask about prescribed benzodiazepines or Z-drugs, alcohol co-ingestion, and review home medications.",
+      treat:"Primarily supportive — airway protection and observation; reversal agents considered only when clinically indicated, with caution for withdrawal or seizure risk.",
+      watch:"Delayed respiratory depression, aspiration, prolonged sedation with long-acting agents."
+    }
+  },
+  {
+    id:"serotonergic", category:"classic", no:6, time:"04:30 AM", setting:"Emergency Department",
+    chief:"A 34-year-old woman on antidepressants presents with agitation, tremor and diarrhea after starting a new medication two days ago.",
+    exam:{
+      mental:"Agitated, restless, mildly confused.",
+      pupils:"Dilated.",
+      skin:"Diaphoretic, warm.",
+      cardio:"HR 122, BP 146/90 — tachycardic.",
+      resp:"RR 22, SpO₂ 98%.",
+      gi:"Hyperactive bowel sounds, watery diarrhea.",
+      temp:"38.6°C",
+      ecg:"Sinus tachycardia.",
+      labs:"Neuromuscular exam: tremor, hyperreflexia, and clonus most pronounced in the lower limbs."
+    },
+    correct:"serotonergic", trueLabel:"Serotonin Syndrome", icon:"🔥",
+    quote:"\u201CTwitchy, hot, and hyperactive — from head to reflexes to bowel.\u201D",
+    reasoning:"Altered mental status, autonomic instability (tachycardia, diaphoresis, hyperthermia) and neuromuscular findings (clonus, hyperreflexia, tremor) — after a recent serotonergic medication change — form the classic serotonin syndrome triad.",
+    pattern:"Agitation + Autonomic instability + Clonus/hyperreflexia + Recent serotonergic drug → serotonin syndrome",
+    rows:[["Pupils","Dilated","Dilated"],["Reflexes","Hyperreflexia + clonus","Hyperreflexia + clonus"],["Bowel sounds","Hyperactive","Hyperactive"],["Heart rate","Tachycardic","Tachycardic"]],
+    mgmt:{
+      stabilize:"Cooling for hyperthermia, and benzodiazepines for agitation, which also reduces muscle activity and heat production.",
+      identify:"Medication reconciliation for serotonergic agents; exclude neuroleptic malignant syndrome as a mimic.",
+      treat:"Stop the offending agent, provide supportive care and benzodiazepines; consider toxin-specific therapy only when clinically indicated and severe.",
+      watch:"Rapidly escalating hyperthermia, rhabdomyolysis, seizures, multi-organ dysfunction in severe cases."
+    }
+  },
+  {
+    id:"mixed", category:"advanced", no:7, time:"05:50 AM", setting:"Emergency Department",
+    chief:"A 41-year-old man with a history of chronic pain is found unresponsive at home with empty pill bottles beside him.",
+    exam:{
+      mental:"Deeply unresponsive, minimal response to painful stimuli.",
+      pupils:"Small but not truly pinpoint — sluggishly reactive.",
+      skin:"Cool, slightly clammy.",
+      cardio:"HR 64, BP 98/58.",
+      resp:"RR 5, shallow, SpO₂ 79% on room air.",
+      gi:"Bowel sounds reduced.",
+      temp:"35.6°C",
+      ecg:"Sinus bradycardia.",
+      labs:"Multiple empty prescription bottles found at scene — both an opioid analgesic and a benzodiazepine."
+    },
+    correct:"other", trueLabel:"Mixed Opioid + Sedative-Hypnotic Overdose", icon:"🌀",
+    quote:"\u201CReal overdoses rarely read the textbook.\u201D",
+    reasoning:"Respiratory depression this severe with only borderline miosis, plus a scene suggesting multiple agents, should raise suspicion for a combined opioid and sedative-hypnotic overdose — real toxidromes often overlap rather than presenting in pure textbook form.",
+    pattern:"Severe resp. depression + Borderline miosis + Polypharmacy history → consider a mixed toxidrome",
+    rows:[["Pupils","Small, not pinpoint","Classic opioid: pinpoint"],["Respiratory rate","5/min","Severely depressed"],["History","Two agent classes found","Single agent expected"]],
+    mgmt:{
+      stabilize:"Airway and ventilatory support are the priority regardless of exactly which agent is identified.",
+      identify:"Reconstruct all substances involved via collateral or pharmacy history; consider further co-ingestant screening.",
+      treat:"Supportive ventilation; reversal agents used cautiously and only when clinically indicated, since reversing one component may unmask the other.",
+      watch:"Re-sedation, aspiration, and an unpredictable course with multiple agents on board."
+    }
+  },
+  {
+    id:"sodium", category:"advanced", no:8, time:"12:15 AM", setting:"Emergency Department",
+    chief:"A 26-year-old woman is brought in after an intentional overdose of her grandmother's medication; she is now drowsy and her heart rhythm looks abnormal on the monitor.",
+    exam:{
+      mental:"Drowsy, intermittently agitated.",
+      pupils:"Dilated.",
+      skin:"Hot and dry.",
+      cardio:"HR 128, BP 88/54 — tachycardic with borderline hypotension.",
+      resp:"RR 16, SpO₂ 97%.",
+      gi:"Decreased bowel sounds.",
+      temp:"37.8°C",
+      ecg:"Wide QRS complex (128ms), terminal R wave in aVR."
+    },
+    correct:"other", trueLabel:"Sodium-Channel Blocker Toxicity (TCA)", icon:"📉",
+    quote:"\u201CIt looks anticholinergic — until you look at the rhythm strip.\u201D",
+    reasoning:"The delirium, mydriasis, hot dry skin and decreased bowel sounds mimic pure anticholinergic toxicity — but the widened QRS and hypotension reveal cardiac sodium-channel blockade, most classically from tricyclic antidepressant overdose. The ECG is the clue that changes everything.",
+    pattern:"Anticholinergic features + Widened QRS + Hypotension → think sodium-channel blocker (e.g. TCA) toxicity",
+    rows:[["Pupils","Dilated","Anticholinergic-like"],["QRS duration","128ms","Normally &lt;100ms"],["Blood pressure","88/54","Hypotensive"]],
+    mgmt:{
+      stabilize:"Continuous cardiac monitoring is essential — this patient is at risk of sudden arrhythmia.",
+      identify:"12-lead ECG for QRS duration and a terminal R wave in aVR; ask specifically what medication was taken.",
+      treat:"Toxin-specific therapy (e.g. sodium bicarbonate) considered when clinically indicated for QRS widening or arrhythmia, per local toxicology protocol, alongside supportive care.",
+      watch:"Seizures, ventricular arrhythmia, sudden hemodynamic collapse."
+    }
+  },
+  {
+    id:"calcium", category:"advanced", no:9, time:"07:40 AM", setting:"Emergency Department",
+    chief:"A 71-year-old man on multiple blood pressure medications is found slow and unwell at home by his daughter.",
+    exam:{
+      mental:"Mildly drowsy but oriented, answers questions slowly.",
+      pupils:"Normal, reactive.",
+      skin:"Cool, normal, no diaphoresis.",
+      cardio:"HR 42, BP 76/48 — significant bradycardia and hypotension.",
+      resp:"RR 16, SpO₂ 96%.",
+      gi:"Bowel sounds normal.",
+      temp:"36.5°C",
+      ecg:"Sinus bradycardia with first-degree AV block; QRS normal.",
+      labs:"Blood glucose 210 mg/dL — unexpectedly elevated for a non-diabetic patient."
+    },
+    correct:"other", trueLabel:"Calcium-Channel Blocker Toxicity", icon:"🩶",
+    quote:"\u201CSlow heart, low pressure, clear mind, high sugar — the numbers tell the story.\u201D",
+    reasoning:"Bradycardia and hypotension with a preserved mental status and, notably, hyperglycemia from blocked insulin release, in a patient on antihypertensives, points toward calcium-channel blocker toxicity rather than a primary cardiac event or beta-blocker overdose.",
+    pattern:"Bradycardia + Hypotension + Preserved mentation + Hyperglycemia → consider calcium-channel blocker toxicity",
+    rows:[["Heart rate","42/min","Bradycardic"],["Mental status","Preserved","Preserved"],["Glucose","210 mg/dL","Elevated"]],
+    mgmt:{
+      stabilize:"Cardiac monitoring, IV access, and preparation for potential hemodynamic support.",
+      identify:"Full medication list, blood glucose, and ECG for conduction abnormalities.",
+      treat:"Supportive hemodynamic care; toxin-specific therapy (e.g. calcium, high-dose insulin therapy) considered when clinically indicated per local toxicology guidance.",
+      watch:"Refractory shock, cardiovascular collapse, worsening AV block."
+    }
+  },
+  {
+    id:"beta", category:"advanced", no:10, time:"08:55 AM", setting:"Emergency Department",
+    chief:"A 68-year-old woman with a history of heart disease is brought in feeling faint and unusually slow after possibly taking extra doses of her medication.",
+    exam:{
+      mental:"Lethargic, mildly confused.",
+      pupils:"Normal.",
+      skin:"Cool, pale.",
+      cardio:"HR 38, BP 82/50 — marked bradycardia and hypotension.",
+      resp:"RR 14, mild wheeze on auscultation, SpO₂ 95%.",
+      gi:"Bowel sounds normal.",
+      temp:"36.1°C",
+      ecg:"Sinus bradycardia, prolonged PR interval.",
+      labs:"Blood glucose 58 mg/dL — unexpectedly low."
+    },
+    correct:"other", trueLabel:"Beta-Blocker Toxicity", icon:"🩶",
+    quote:"\u201CSame slow, low picture as its cousin — but the sugar runs the other way.\u201D",
+    reasoning:"Bradycardia, hypotension and bronchospasm alongside hypoglycemia — rather than hyperglycemia — in a patient on beta-blockers points to beta-blocker toxicity. The direction the glucose moves is the key feature separating it from calcium-channel blocker overdose.",
+    pattern:"Bradycardia + Hypotension + Bronchospasm + Hypoglycemia → consider beta-blocker toxicity",
+    rows:[["Heart rate","38/min","Bradycardic"],["Glucose","58 mg/dL","Low"],["Respiratory","Mild wheeze","Bronchospasm"]],
+    mgmt:{
+      stabilize:"Cardiac monitoring, treatment of symptomatic bradycardia and hypotension, and correction of hypoglycemia.",
+      identify:"Confirm beta-blocker use or overdose, obtain ECG and blood glucose, and consider co-ingestants.",
+      treat:"Supportive hemodynamic care; toxin-specific therapy (e.g. glucagon) considered when clinically indicated per local toxicology guidance.",
+      watch:"Refractory bradycardia, cardiogenic shock, bronchospasm in reactive airway disease."
+    }
+  },
+  {
+    id:"salicylate", category:"advanced", no:11, time:"06:25 PM", setting:"Emergency Department",
+    chief:"A 54-year-old man presents with ringing in his ears, rapid breathing and nausea after taking large amounts of pain medication over several days.",
+    exam:{
+      mental:"Anxious, mildly confused, restless.",
+      pupils:"Normal.",
+      skin:"Diaphoretic, warm.",
+      cardio:"HR 118, BP 128/80 — tachycardic.",
+      resp:"RR 32, deep and rapid, SpO₂ 98%.",
+      gi:"Nausea and vomiting; bowel sounds normal.",
+      temp:"38.7°C",
+      ecg:"Sinus tachycardia.",
+      labs:"Reports tinnitus; blood gas shows a mixed respiratory alkalosis and metabolic acidosis."
+    },
+    correct:"other", trueLabel:"Salicylate Toxicity", icon:"🌡",
+    quote:"\u201CBreathing fast to fight an acid it can't outrun.\u201D",
+    reasoning:"Tinnitus, hyperventilation, hyperthermia and a mixed respiratory alkalosis / metabolic acidosis picture after excessive analgesic use is the classic salicylate toxicity pattern — the deep, rapid breathing is a compensatory clue, not a primary respiratory problem.",
+    pattern:"Tinnitus + Hyperventilation + Hyperthermia + Mixed acid-base picture → consider salicylate toxicity",
+    rows:[["Respiratory rate","32/min, deep","Compensatory hyperventilation"],["Blood gas","Mixed alkalosis/acidosis","Mixed picture"],["Symptom","Tinnitus","Tinnitus"]],
+    mgmt:{
+      stabilize:"Monitor closely for escalating agitation or altered mental status — a warning sign of worsening toxicity.",
+      identify:"Trend salicylate levels, blood gas, glucose, and renal function.",
+      treat:"Supportive care; alkalinization considered when clinically indicated per local toxicology guidance to enhance elimination.",
+      watch:"Cerebral and pulmonary edema, worsening acidosis, and altered mental status signaling severe toxicity."
+    }
+  },
+  {
+    id:"alcohols", category:"advanced", no:12, time:"10:10 PM", setting:"Emergency Department",
+    chief:"A 39-year-old man with a history of alcohol use presents confused and complaining of blurred vision after drinking from an unlabeled bottle found in his garage.",
+    exam:{
+      mental:"Confused, lethargic.",
+      pupils:"Sluggish, mid-sized.",
+      skin:"Normal, no diaphoresis.",
+      cardio:"HR 96, BP 128/78 — mildly tachycardic.",
+      resp:"RR 24, deep breathing pattern, SpO₂ 97%.",
+      gi:"Bowel sounds normal, mild nausea.",
+      temp:"36.8°C",
+      ecg:"Sinus tachycardia.",
+      labs:"Markedly elevated osmolar gap and anion gap metabolic acidosis; no smell of ethanol on breath."
+    },
+    correct:"other", trueLabel:"Toxic Alcohol Ingestion", icon:"👁",
+    quote:"\u201CThe breath doesn't smell like alcohol — but the numbers do.\u201D",
+    reasoning:"Confusion and visual complaints with a large osmolar gap, an anion gap metabolic acidosis and compensatory deep breathing — without the expected smell of ethanol — should raise suspicion for a toxic alcohol ingestion such as methanol or ethylene glycol, rather than simple intoxication.",
+    pattern:"Confusion + Visual symptoms + Elevated osmolar/anion gap → consider toxic alcohol ingestion",
+    rows:[["Osmolar gap","Markedly elevated","Elevated"],["Anion gap","Elevated","Elevated"],["Breath odor","No ethanol smell","Often absent"]],
+    mgmt:{
+      stabilize:"Airway and breathing support; correct severe acidosis as guided by local protocol.",
+      identify:"Osmolar and anion gap, specific alcohol levels where available, and ophthalmology input if visual symptoms are present.",
+      treat:"Toxin-specific therapy (alcohol dehydrogenase blockade, consideration of dialysis) considered when clinically indicated per local toxicology or poison-center guidance.",
+      watch:"Blindness (methanol), renal failure (ethylene glycol), and worsening acidosis."
+    }
+  }
+];
+
+const EXAM_META = [
+  { key:"mental", icon:"🧠", label:"Mental status" },
+  { key:"pupils", icon:"👁", label:"Pupils" },
+  { key:"skin", icon:"💧", label:"Skin" },
+  { key:"cardio", icon:"❤️", label:"Cardiovascular" },
+  { key:"resp", icon:"🫁", label:"Respiratory" },
+  { key:"gi", icon:"🦠", label:"GI" },
+  { key:"temp", icon:"🌡", label:"Temperature" },
+  { key:"ecg", icon:"⚡", label:"ECG" }
+];
+
+const TITLES = { master:"MASTER DETECTIVE", nerd:"TOXICOLOGY NERD", hunter:"PATTERN HUNTER", turbo:"TOXIC TURBO" };
+
+/* ================= STATE ================= */
+
+const STORAGE_KEY = "toxidromeDetective_v1";
+let progress = loadProgress();
+
+let current = {
+  caseObj:null,
+  opened:{},          // examKey -> true
+  openedCount:0,
+  totalFields:0,
+  startTime:0,
+  dxKey:null,
+  confidence:null,
+  scoreResult:null
+};
+
+function loadProgress(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e){}
+  return { solved:[], streak:0, totalCorrect:0 };
+}
+function saveProgress(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch(e){}
+}
+
+/* ================= ELEMENTS ================= */
+
+const screens = {
+  landing: document.getElementById("landing"),
+  library: document.getElementById("library"),
+  caseIntro: document.getElementById("caseIntro"),
+  exam: document.getElementById("exam"),
+  diagnosis: document.getElementById("diagnosis"),
+  results: document.getElementById("results"),
+  twist: document.getElementById("twist")
+};
+const topnav = document.getElementById("topnav");
+const toast = document.getElementById("toast");
+
+function showScreen(name){
+  Object.values(screens).forEach(s => s.classList.add("hidden"));
+  screens[name].classList.remove("hidden");
+  topnav.classList.toggle("hidden", name === "landing");
+  window.scrollTo(0,0);
+}
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 2200);
+}
+
+/* ================= LIBRARY ================= */
+
+function renderLibrary(){
+  document.getElementById("libStreakPill").textContent = "🔥 " + progress.streak + " case streak";
+  const unlocked = progress.totalCorrect >= 3;
+
+  const classicGrid = document.getElementById("classicGrid");
+  const advancedGrid = document.getElementById("advancedGrid");
+  classicGrid.innerHTML = "";
+  advancedGrid.innerHTML = "";
+
+  CASES.forEach(c => {
+    const solved = progress.solved.indexOf(c.id) !== -1;
+    const locked = c.category === "advanced" && !unlocked;
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "case-card" + (solved ? " solved" : "") + (locked ? " locked" : "");
+    card.innerHTML =
+      '<div class="cc-left"><h3>Case #' + String(c.no).padStart(2,"0") + " — " + c.trueLabel.replace(" Toxidrome","").replace(" Toxicity","").replace(" (TCA)","") + '</h3>' +
+      '<p>' + c.setting + '</p></div>' +
+      '<div class="cc-right">' + (locked ? "🔒 UNLOCK AFTER 3" : (solved ? "✓ SOLVED" : "OPEN")) + '</div>';
+    if (!locked){
+      card.addEventListener("click", () => beginCase(c.id));
+    }
+    (c.category === "classic" ? classicGrid : advancedGrid).appendChild(card);
+  });
+}
+
+function beginCase(id){
+  const c = CASES.find(x => x.id === id);
+  if (!c) return;
+  current.caseObj = c;
+  current.opened = {};
+  current.openedCount = 0;
+  const fields = EXAM_META.filter(m => c.exam[m.key]);
+  current.totalFields = fields.length + (c.exam.labs ? 1 : 0);
+  current.dxKey = null;
+  current.confidence = null;
+  current.startTime = 0;
+
+  document.getElementById("introTag").textContent = "CASE #" + String(c.no).padStart(2,"0");
+  document.getElementById("introTime").textContent = c.time + " — " + c.setting;
+  document.getElementById("introStory").textContent = "\u201C" + c.chief + "\u201D";
+  showScreen("caseIntro");
+}
+
+function beginRandomCase(){
+  const unlocked = progress.totalCorrect >= 3;
+  const pool = CASES.filter(c => c.category === "classic" || unlocked);
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  beginCase(pick.id);
+}
+
+/* ================= EXAM SCREEN ================= */
+
+function renderExam(){
+  const c = current.caseObj;
+  current.startTime = Date.now();
+  document.getElementById("examTag").textContent = "CASE #" + String(c.no).padStart(2,"0") + " · EXAMINATION";
+  const grid = document.getElementById("examGrid");
+  grid.innerHTML = "";
+
+  EXAM_META.forEach(m => {
+    if (!c.exam[m.key]) return;
+    grid.appendChild(buildExamCard(m.key, m.icon, m.label, c.exam[m.key]));
+  });
+  if (c.exam.labs){
+    grid.appendChild(buildExamCard("labs", "🧪", "Labs / extra", c.exam.labs));
+  }
+  updateExamHint();
+  document.getElementById("toDxBtn").disabled = true;
+}
+
+function buildExamCard(key, icon, label, finding){
+  const card = document.createElement("button");
+  card.type = "button";
+  card.className = "exam-card";
+  card.innerHTML =
+    '<span class="ec-icon">' + icon + '</span>' +
+    '<span class="ec-label">' + label + '</span>' +
+    '<span class="ec-finding">' + finding + '</span>';
+  card.addEventListener("click", () => {
+    if (current.opened[key]) return;
+    current.opened[key] = true;
+    current.openedCount++;
+    card.classList.add("opened");
+    updateExamHint();
+  });
+  return card;
+}
+
+function updateExamHint(){
+  const hint = document.getElementById("examHint");
+  const btn = document.getElementById("toDxBtn");
+  const remaining = Math.max(0, 3 - current.openedCount);
+  if (remaining > 0){
+    hint.textContent = "Open " + remaining + " more finding" + (remaining === 1 ? "" : "s") + " before you commit to a diagnosis.";
+    btn.disabled = true;
+  } else {
+    hint.textContent = current.openedCount + " of " + current.totalFields + " findings reviewed. Ready when you are.";
+    btn.disabled = false;
+  }
+}
+
+/* ================= DIAGNOSIS SCREEN ================= */
+
+function renderDiagnosis(){
+  const opts = document.getElementById("dxOptions");
+  opts.innerHTML = "";
+  DX_OPTIONS.forEach(o => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "dx-opt";
+    btn.textContent = o.label;
+    btn.addEventListener("click", () => {
+      current.dxKey = o.key;
+      Array.from(opts.children).forEach(el => el.classList.remove("selected"));
+      btn.classList.add("selected");
+      updateLockIn();
+    });
+    opts.appendChild(btn);
+  });
+  document.querySelectorAll(".conf-opt").forEach(el => {
+    el.classList.remove("selected");
+    el.onclick = () => {
+      current.confidence = el.dataset.c;
+      document.querySelectorAll(".conf-opt").forEach(x => x.classList.remove("selected"));
+      el.classList.add("selected");
+      updateLockIn();
+    };
+  });
+  current.dxKey = null;
+  current.confidence = null;
+  updateLockIn();
+}
+
+function updateLockIn(){
+  document.getElementById("lockInBtn").disabled = !(current.dxKey && current.confidence);
+}
+
+/* ================= SCORING ================= */
+
+function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+
+function computeScore(){
+  const c = current.caseObj;
+  const correct = current.dxKey === c.correct;
+  const elapsedMs = Date.now() - current.startTime;
+
+  const effPercent = clamp(Math.round(100 - ((current.openedCount - 1) / Math.max(1,(current.totalFields - 1))) * 55), 45, 100);
+
+  let speedPercent;
+  if (elapsedMs < 45000) speedPercent = 96;
+  else if (elapsedMs < 90000) speedPercent = 85;
+  else if (elapsedMs < 180000) speedPercent = 72;
+  else speedPercent = 58;
+
+  let patternPercent;
+  if (correct){
+    patternPercent = current.confidence === "high" ? 95 : current.confidence === "moderate" ? 84 : 74;
+  } else {
+    patternPercent = current.confidence === "high" ? 32 : current.confidence === "low" ? 55 : 44;
+  }
+
+  const dxPoints = correct ? 100 : 25;
+  const overall = clamp(Math.round(0.35*patternPercent + 0.25*effPercent + 0.15*speedPercent + 0.25*dxPoints), 0, 100);
+
+  let titleKey;
+  if (!correct) titleKey = "turbo";
+  else if (overall >= 90) titleKey = "master";
+  else if (overall >= 78) titleKey = "nerd";
+  else titleKey = "hunter";
+
+  return { correct, overall, patternPercent, effPercent, speedPercent, titleKey };
+}
+
+/* ================= RESULTS SCREEN ================= */
+
+function lockInDiagnosis(){
+  const result = computeScore();
+  current.scoreResult = result;
+
+  if (result.correct){
+    progress.streak += 1;
+    progress.totalCorrect += 1;
+  } else {
+    progress.streak = 0;
+  }
+  if (progress.solved.indexOf(current.caseObj.id) === -1){
+    progress.solved.push(current.caseObj.id);
+  }
+  saveProgress();
+
+  renderResults(result);
+  showScreen("results");
+}
+
+function renderResults(result){
+  const c = current.caseObj;
+
+  document.getElementById("verdictIcon").textContent = c.icon || "🧪";
+  document.getElementById("verdictName").textContent = c.trueLabel.toUpperCase();
+  document.getElementById("verdictQuote").innerHTML = c.quote;
+  const statusEl = document.getElementById("verdictStatus");
+  if (result.correct){
+    statusEl.textContent = "✓ Your call: " + DX_LABEL[current.dxKey] + " — correct";
+    statusEl.className = "verdict-status correct";
+  } else {
+    statusEl.textContent = "Your call: " + DX_LABEL[current.dxKey] + " — not quite";
+    statusEl.className = "verdict-status incorrect";
+  }
+
+  const table = document.getElementById("compareTable");
+  let rowsHtml = '<tr><th>Finding</th><th>Patient</th><th>Classic pattern</th></tr>';
+  c.rows.forEach(r => { rowsHtml += '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'; });
+  table.innerHTML = rowsHtml;
+
+  document.getElementById("whyText").textContent = c.reasoning;
+  document.getElementById("patternText").textContent = c.pattern;
+
+  const mgmtGrid = document.getElementById("mgmtGrid");
+  mgmtGrid.innerHTML = "";
+  const mgmtSteps = [
+    ["01","Stabilize", c.mgmt.stabilize],
+    ["02","Identify", c.mgmt.identify],
+    ["03","Treat", c.mgmt.treat],
+    ["04","Watch For", c.mgmt.watch]
+  ];
+  mgmtSteps.forEach(s => {
+    const card = document.createElement("div");
+    card.className = "mgmt-card";
+    card.innerHTML = '<span class="mn">'+s[0]+'</span><h5>'+s[1]+'</h5><p>'+s[2]+'</p>';
+    mgmtGrid.appendChild(card);
+  });
+
+  document.getElementById("scoreBig").textContent = result.overall;
+  document.getElementById("scoreTitle").textContent = TITLES[result.titleKey];
+  document.getElementById("scoreRows").innerHTML =
+    '<div class="score-row"><span>🧠 Pattern recognition</span><span>'+result.patternPercent+'%</span></div>' +
+    '<div class="score-row"><span>🔎 Clue efficiency</span><span>'+result.effPercent+'%</span></div>' +
+    '<div class="score-row"><span>⚡ Speed</span><span>'+result.speedPercent+'%</span></div>' +
+    '<div class="score-row"><span>🎯 Final diagnosis</span><span>'+(result.correct ? "Correct" : "Incorrect")+'</span></div>';
+  document.getElementById("streakLine").textContent =
+    progress.streak > 0 ? "🔥 " + progress.streak + " case streak — don't break it." : "Streak reset. One more case?";
+}
+
+/* ================= TWIST MODE ================= */
+
+function startTwist(){
+  document.getElementById("twistStage1").classList.remove("hidden");
+  document.getElementById("twistStage2").classList.add("hidden");
+  showScreen("twist");
+}
+
+/* ================= SHARE CARD ================= */
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+  const words = text.split(" ");
+  let line = "", yy = y, lines = [];
+  for (let n=0; n<words.length; n++){
+    const test = line + words[n] + " ";
+    if (ctx.measureText(test).width > maxWidth && n>0){ lines.push(line.trim()); line = words[n] + " "; }
+    else line = test;
+  }
+  lines.push(line.trim());
+  lines.forEach((l,i) => ctx.fillText(l, x, yy + i*lineHeight));
+  return lines.length * lineHeight;
+}
+
+function buildShareCanvas(){
+  const c = current.caseObj, r = current.scoreResult;
+  const canvas = document.getElementById("shareCanvas");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+
+  const bgGrad = ctx.createRadialGradient(W*0.5,H*0.05,0,W*0.5,H*0.05,W*0.9);
+  bgGrad.addColorStop(0,"#1a0e0e"); bgGrad.addColorStop(1,"#070a0e");
+  ctx.fillStyle = bgGrad; ctx.fillRect(0,0,W,H);
+
+  const glow = ctx.createRadialGradient(W*0.5,H*0.05,0,W*0.5,H*0.05,W*0.6);
+  glow.addColorStop(0,"rgba(255,59,78,0.18)"); glow.addColorStop(1,"rgba(255,59,78,0)");
+  ctx.fillStyle = glow; ctx.fillRect(0,0,W,H);
+
+  ctx.strokeStyle = "rgba(255,255,255,0.10)"; ctx.lineWidth = 3;
+  ctx.strokeRect(26,26,W-52,H-52);
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#4ade80";
+  ctx.font = "700 30px 'Space Grotesk', sans-serif";
+  ctx.fillText("CASE SOLVED", W/2, 130);
+
+  ctx.fillStyle = "#ff3b4e";
+  ctx.font = "600 26px 'IBM Plex Mono', monospace";
+  ctx.fillText("TOXIDROME DETECTIVE", W/2, 175);
+
+  ctx.font = "90px sans-serif";
+  ctx.fillText(c.icon || "🧪", W/2, 320);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "700 46px 'Space Grotesk', sans-serif";
+  wrapText(ctx, c.trueLabel, W/2, 390, W-160, 52);
+
+  ctx.fillStyle = "#c7cbd6";
+  ctx.font = "500 26px 'IBM Plex Mono', monospace";
+  ctx.fillText("SCORE", W/2, 560);
+  ctx.fillStyle = "#ffb020";
+  ctx.font = "700 90px 'Space Grotesk', sans-serif";
+  ctx.fillText(String(r.overall), W/2, 660);
+
+  ctx.fillStyle = "#eef1f6";
+  ctx.font = "600 32px 'IBM Plex Mono', monospace";
+  ctx.fillText(TITLES[r.titleKey], W/2, 720);
+
+  ctx.fillStyle = "#8b93a8";
+  ctx.font = "500 26px 'Inter', sans-serif";
+  ctx.fillText(progress.streak + " case streak 🔥", W/2, 800);
+
+  ctx.fillStyle = "#6b7180";
+  ctx.font = "600 28px 'Inter', sans-serif";
+  ctx.fillText("Tea & Toxins · The ER Playbook", W/2, H-90);
+  ctx.fillStyle = "#454a58";
+  ctx.font = "400 20px 'Inter', sans-serif";
+  ctx.fillText("Educational simulation — not a substitute for clinical assessment", W/2, H-56);
+
+  return canvas;
+}
+
+async function handleShare(){
+  if (document.fonts && document.fonts.ready){ try{ await document.fonts.ready; } catch(e){} }
+  const canvas = buildShareCanvas();
+  canvas.toBlob(async (blob) => {
+    if (!blob){ showToast("Couldn't generate the image — try again."); return; }
+    const fileName = "toxidrome-" + current.caseObj.id + ".png";
+    const file = new File([blob], fileName, { type:"image/png" });
+
+    if (navigator.canShare && navigator.canShare({ files:[file] })){
+      try{
+        await navigator.share({ files:[file], title:"Toxidrome Detective", text:"Case solved: " + current.caseObj.trueLabel + " — score " + current.scoreResult.overall });
+        return;
+      } catch(err){ /* fall through */ }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    showToast("Image saved — share it from your gallery \uD83D\uDCF8");
+  }, "image/png", 0.95);
+}
+
+/* ================= MODALS ================= */
+
+function openModal(title, bodyHtml, includeReset){
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+  overlay.innerHTML =
+    '<div class="modal-sheet">' +
+      '<h3>' + title + '</h3>' +
+      bodyHtml +
+      (includeReset ? '<button class="modal-reset" id="resetProgressBtn">Reset my progress</button>' : '') +
+      '<button class="modal-close" id="modalCloseBtn">Close</button>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  document.getElementById("modalCloseBtn").addEventListener("click", () => overlay.remove());
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+  if (includeReset){
+    document.getElementById("resetProgressBtn").addEventListener("click", () => {
+      progress = { solved:[], streak:0, totalCorrect:0 };
+      saveProgress();
+      showToast("Progress reset.");
+      overlay.remove();
+      renderLibrary();
+    });
+  }
+}
+
+/* ================= EVENTS ================= */
+
+document.getElementById("startBtn").addEventListener("click", () => { renderLibrary(); showScreen("library"); });
+document.getElementById("navCases").addEventListener("click", () => { renderLibrary(); showScreen("library"); });
+document.getElementById("navStreak").addEventListener("click", () => {
+  openModal("Your streak", '<p>🔥 Current streak: <strong>'+progress.streak+'</strong> case(s) in a row.</p><p>Total correct diagnoses: <strong>'+progress.totalCorrect+'</strong>.</p>', false);
+});
+document.getElementById("navAbout").addEventListener("click", () => {
+  openModal("About this game",
+    '<p>Toxidrome Detective is an educational simulation from Tea &amp; Toxins for practicing toxicology pattern recognition.</p>' +
+    '<p>It is not a validated diagnostic tool and not a substitute for real clinical assessment or local toxicology/poison-center guidance.</p>',
+    true);
+});
+
+document.getElementById("randomBtn").addEventListener("click", beginRandomCase);
+document.getElementById("twistBtn").addEventListener("click", startTwist);
+
+document.getElementById("enterCaseBtn").addEventListener("click", () => { renderExam(); showScreen("exam"); });
+document.getElementById("introBackBtn").addEventListener("click", () => { renderLibrary(); showScreen("library"); });
+
+document.getElementById("toDxBtn").addEventListener("click", () => { renderDiagnosis(); showScreen("diagnosis"); });
+
+document.getElementById("lockInBtn").addEventListener("click", lockInDiagnosis);
+
+document.getElementById("shareBtn").addEventListener("click", handleShare);
+document.getElementById("nextCaseBtn").addEventListener("click", beginRandomCase);
+document.getElementById("resToLibBtn").addEventListener("click", () => { renderLibrary(); showScreen("library"); });
+
+document.getElementById("twistRevealBtn").addEventListener("click", () => {
+  document.getElementById("twistStage1").classList.add("hidden");
+  document.getElementById("twistStage2").classList.remove("hidden");
+});
+document.getElementById("twistDoneBtn").addEventListener("click", () => { renderLibrary(); showScreen("library"); });
+
+})();
+</script>
+</body>
+</html>
