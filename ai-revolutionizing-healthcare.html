@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Most Revolutionary AI in Healthcare Isn't Diagnosing Patients — Tea and Toxins</title>
+<meta name="description" content="What 100,000 chest X-rays in Goa taught an ER resident about where AI in medicine actually earns its keep — and where it still doesn't belong near a patient.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #1B120D;
+    --paper-deep: #2A1E15;
+    --ink: #F4ECDF;
+    --ink-soft: #C9BBA6;
+    --espresso: #0D0805;
+    --espresso-soft: #070402;
+    --cream-text: #F4ECDF;
+    --cream-soft: #C9BBA6;
+    --rust: #C97B54;
+    --rust-soft: #E3A47E;
+    --hairline: rgba(244,236,223,0.14);
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{ font-family:'Fraunces', Georgia, serif; margin:0; font-weight:500; }
+  p{ margin:0; }
+  a{ color:inherit; }
+  .wrap{ max-width:680px; margin:0 auto; padding:0 22px; }
+
+  nav{
+    position:sticky; top:0; z-index:50; background:rgba(13,8,5,0.9); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--hairline);
+  }
+  nav .inner{ max-width:680px; margin:0 auto; padding:0 22px; display:flex; align-items:center; justify-content:space-between; height:60px; }
+  nav .back{ font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--cream-soft); text-decoration:none; }
+  nav .wordmark{ font-family:'Fraunces', serif; font-style:italic; font-size:16px; color:var(--cream-text); }
+
+  header.post-head{ padding:44px 0 26px; }
+  .kicker{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--rust-soft); letter-spacing:0.06em; }
+  h1.title{ font-size:clamp(30px,6vw,42px); line-height:1.15; margin-top:16px; letter-spacing:-0.01em; }
+  .deck{ font-size:17px; line-height:1.55; color:var(--ink-soft); margin-top:18px; font-style:italic; }
+  .byline{
+    display:flex; align-items:center; gap:10px; margin-top:26px; font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--ink-soft);
+  }
+  .byline .dot{ opacity:.5; }
+
+  .hero-img{ width:100%; margin:30px 0 8px; border-radius:6px; overflow:hidden; border:1px solid var(--hairline); }
+  .hero-img img, .hero-img svg{ width:100%; display:block; }
+  .hero-cap{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--ink-soft); margin-bottom:40px; }
+
+  article p{ font-size:17px; line-height:1.75; color:var(--ink); margin-bottom:22px; }
+  article p.lead{ font-size:19px; }
+  article h2{ font-size:24px; margin-top:48px; margin-bottom:18px; line-height:1.25; color:var(--rust-soft); }
+  article .pull{
+    font-family:'Fraunces', Georgia, serif; font-style:italic; font-size:23px; line-height:1.4; color:var(--cream-text);
+    border-left:3px solid var(--rust); padding-left:20px; margin:36px 0; max-width:560px;
+  }
+  article .stat-row{
+    display:flex; gap:14px; margin:30px 0; flex-wrap:wrap;
+  }
+  article .stat{
+    flex:1; min-width:130px; background:var(--paper-deep); border:1px solid var(--hairline); border-radius:8px;
+    padding:16px 14px;
+  }
+  article .stat .n{ font-family:'IBM Plex Mono', monospace; font-size:22px; font-weight:600; color:var(--rust-soft); }
+  article .stat .l{ font-size:11.5px; color:var(--ink-soft); margin-top:6px; line-height:1.4; }
+  article ul{ padding-left:20px; margin-bottom:22px; }
+  article li{ font-size:16.5px; line-height:1.65; color:var(--ink); margin-bottom:8px; }
+
+  .disclaimer{
+    font-size:12.5px; color:var(--ink-soft); background:var(--paper-deep); border-left:3px solid var(--rust);
+    padding:12px 16px; border-radius:3px; margin:40px 0; line-height:1.6;
+  }
+
+  .author-card{
+    display:flex; gap:16px; align-items:flex-start; margin-top:56px; padding-top:28px; border-top:1px solid var(--hairline);
+  }
+  .author-card .initial{
+    flex-shrink:0; width:48px; height:48px; border-radius:50%; background:var(--rust); color:var(--espresso-soft);
+    display:flex; align-items:center; justify-content:center; font-family:'Fraunces', serif; font-weight:600; font-size:19px;
+  }
+  .author-card .who h3{ font-size:15px; }
+  .author-card .who p{ font-size:13px; color:var(--ink-soft); margin-top:4px; line-height:1.5; }
+
+  .follow-cta{ text-align:center; padding:60px 0 20px; }
+  .follow-cta p{ font-size:14.5px; color:var(--ink-soft); margin-bottom:18px; }
+  .cta-primary{
+    background:var(--rust); color:var(--espresso-soft); padding:13px 24px; border-radius:4px; font-size:14px;
+    font-weight:600; display:inline-block; text-decoration:none;
+  }
+
+  footer{ background:var(--espresso-soft); color:var(--cream-soft); padding:26px 0; margin-top:20px; }
+  footer .inner{ max-width:680px; margin:0 auto; padding:0 22px; }
+  footer p{ font-size:11.5px; line-height:1.6; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a class="back" href="index.html">← Tea and Toxins</a>
+    <span class="wordmark">Featured</span>
+  </div>
+</nav>
+
+<div class="wrap">
+  <header class="post-head">
+    <span class="kicker">AI &amp; MEDICINE · FEATURED</span>
+    <h1 class="title">The Most Revolutionary AI in Healthcare Isn't Diagnosing Patients. It's Finding Them.</h1>
+    <p class="deck">What 100,000 chest X-rays in Goa taught me about where AI in medicine actually earns its keep — and where it still doesn't belong anywhere near a patient.</p>
+    <div class="byline">
+      <span>Dr. Shifana</span><span class="dot">·</span><span>MD (Emergency Medicine), Final Year</span><span class="dot">·</span><span>8 min read</span>
+    </div>
+  </header>
+
+  <div class="hero-img">
+    <svg viewBox="0 0 600 375" role="img" aria-label="Illustration of a hospital monitor displaying a scan with an AI-flagged region, with a queue of patients waiting in the corridor." xmlns="http://www.w3.org/2000/svg">
+      <rect width="600" height="375" fill="#1B120D"/>
+      <line x1="30" y1="345" x2="470" y2="345" stroke="#5B4A3B" stroke-width="2" opacity="0.5"/>
+      <g stroke="#F4ECDF" fill="none" stroke-width="2.2">
+        <g opacity="0.9"><circle cx="68" cy="300" r="11"/><rect x="57" y="311" width="22" height="40" rx="10"/></g>
+        <g opacity="0.7"><circle cx="106" cy="306" r="9"/><rect x="97" y="315" width="18" height="34" rx="9"/></g>
+        <g opacity="0.55"><circle cx="138" cy="311" r="7.5"/><rect x="130.5" y="318.5" width="15" height="28" rx="7.5"/></g>
+        <g opacity="0.4"><circle cx="166" cy="315" r="6"/><rect x="160" y="321" width="12" height="22" rx="6"/></g>
+      </g>
+      <rect x="140" y="50" width="320" height="210" rx="14" fill="#2A1E15" stroke="#F4ECDF" stroke-opacity="0.12" stroke-width="2"/>
+      <rect x="280" y="260" width="40" height="14" fill="#2A1E15" stroke="#5B4A3B" stroke-width="2"/>
+      <ellipse cx="300" cy="282" rx="70" ry="9" fill="none" stroke="#5B4A3B" stroke-width="3"/>
+      <rect x="162" y="72" width="276" height="150" rx="6" fill="#0D0805"/>
+      <path d="M180 150 L220 150 L235 108 L252 182 L266 88 L282 150 L420 150" stroke="#C97B54" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="221" y="93" width="56" height="98" fill="none" stroke="#E3A47E" stroke-width="1.5" stroke-dasharray="4 4" rx="3"/>
+      <text x="221" y="86" font-family="'IBM Plex Mono', monospace" font-size="10" fill="#E3A47E">anomaly · 98%</text>
+    </svg>
+  </div>
+  <p class="hero-cap">Illustration — the ER moment everyone pictures when they hear "AI in healthcare." It's not the one doing the most work.</p>
+
+  <article>
+    <p class="lead">It's 3 AM in a busy emergency department in Tamil Nadu. There are two doctors on the floor, one nurse who's been on since noon, and a corridor of stretchers that outnumbers the beds. Somewhere in that corridor is a patient whose oxygen is quietly dropping, and a patient who is simply anxious and breathing fast because of it. Telling the two apart, fast, correctly, over and over — that is the job, most nights. It is also, apparently, the job AI is supposed to be coming for.</p>
+
+    <p>I want to tell you it isn't. Not yet, and maybe not for the reason you'd expect.</p>
+
+    <h2>The honest research is more interesting than the headlines</h2>
+    <p>The evidence for AI triage in emergency departments is real, and it's better than most skeptics assume. A widely cited NEJM AI study found that AI-assisted triage cut the time from arrival to initial care nearly in half — from 12 minutes to 8 — and improved correct identification of critical patients from 78.8% to 83.1%. Those are not rounding-error numbers. In a department where minutes decide outcomes, that gap is a meaningful number of people who got seen sooner because a model flagged them first.</p>
+
+    <div class="stat-row">
+      <div class="stat"><div class="n">12 → 8 min</div><div class="l">Arrival-to-care time, with AI-assisted triage</div></div>
+      <div class="stat"><div class="n">78.8% → 83.1%</div><div class="l">Correct identification of critical patients</div></div>
+    </div>
+
+    <p>But the same body of research is honest about where it breaks. Vital sign norms differ across ethnic groups, ages, and even genders — a model trained on one population can systematically over- or under-triage another. Emergency nurses, the people actually living with these tools shift after shift, remain "substantially more reserved" about them than almost anyone else in the hospital, and for a specific, unglamorous reason: in a busy ED, vitals get measured hastily, histories arrive incomplete, and a model fed rushed, partial data will confidently produce a rushed, partial answer. Garbage in, garbage out — except the garbage, here, is a real person's blood pressure taken in twelve seconds by someone who's been on their feet for ten hours.</p>
+
+    <p class="pull">Nobody has resolved who is responsible when an AI-triaged "low-acuity" patient quietly deteriorates in the waiting room. That question alone should tell you the technology is ready before the system around it is.</p>
+
+    <h2>The real story is happening upstream, not in the ER</h2>
+    <p>While the triage debate stays stuck on trust and accountability, something quieter and, I'd argue, more consequential has been happening one step earlier in the pipeline — before anyone becomes an emergency at all.</p>
+
+    <p>Qure.ai's own year-end report on India's public healthcare system, presented at the India AI Impact Summit this February, reads less like a tech showcase and more like an epidemiology paper. In Maharashtra, AI-powered chest X-ray screening contributed to a 35% increase in tuberculosis detection — including asymptomatic cases caught incidentally, during X-rays taken for something else entirely. In Karnataka, a state government partnership found over 6,400 TB cases and high-risk lung nodules through one unified AI workflow. In Goa, a statewide program screened more than 100,000 routine chest X-rays and surfaced 20 confirmed lung cancers through structured referral — cancers that, in the ordinary course of things, would have stayed invisible until they announced themselves in an ER exactly like mine. During the Maha Kumbh Mela, with millions of people passing through in weeks, AI flagged abnormalities in 36% of the chest X-rays taken on-site. A stroke network in Punjab cut diagnostic turnaround by up to 85%, buying back the exact minutes that decide whether a clot-busting drug still has a window to work in a district hospital far from a specialist.</p>
+
+    <div class="stat-row">
+      <div class="stat"><div class="n">35%</div><div class="l">Rise in TB detection, Maharashtra AI screening</div></div>
+      <div class="stat"><div class="n">100,000+</div><div class="l">Chest X-rays screened statewide in Goa → 20 confirmed cancers</div></div>
+      <div class="stat"><div class="n">↓85%</div><div class="l">Stroke diagnostic turnaround, Punjab network</div></div>
+    </div>
+
+    <p>None of that required an algorithm to make a judgment call about a specific, ambiguous, context-heavy patient at 3 AM. It required an algorithm to do something tirelessly, consistently, at a scale no radiologist workforce in the country could ever match — look at every single X-ray, not just the ones someone remembered to flag as worth a second look.</p>
+
+    <h2>The revolution isn't a robot in the ER. It's fewer people arriving undiagnosed.</h2>
+    <p>This is the reframe I keep coming back to. The AI-in-healthcare conversation is obsessed with the emergency room because it's the most dramatic room in the hospital — the one where a machine making a life-or-death call feels like the future arriving. But the emergency room is precisely the worst place to hand a model the final word: it's where context is everything, data is messiest, and the cost of a wrong call is highest and most immediate.</p>
+
+    <p>The screening line, the routine chest X-ray, the population-scale scan taken for an entirely different reason — that's the low-stakes, high-volume, structurally boring moment where AI's actual strength, endless unglamorous consistency, is worth more than a clinician's judgment, not less. The revolution in Indian healthcare isn't going to look like a diagnostic algorithm replacing an ER doctor's call on an ambiguous patient. It's going to look like fewer ambiguous patients reaching the ER already sick, because something caught them three months and one incidental X-ray earlier.</p>
+
+    <ul>
+      <li><strong>Where AI should own the decision:</strong> high-volume, low-context screening — reading every scan in a queue nobody has the workforce to read manually, at population scale.</li>
+      <li><strong>Where AI should stay a second opinion:</strong> triage and diagnosis in the ED, where incomplete data, human trust, and accountability gaps are still unsolved problems, not implementation details.</li>
+      <li><strong>Where the actual shortage is:</strong> not better models, but people who've stood on both sides of that line and can say, credibly, where it belongs.</li>
+    </ul>
+
+    <p>That last point is the one I think the industry keeps underrating. Every AI-health company I've read about is hunting for better data, better models, better validation studies. Very few are hunting for the person who can stand in a 3 AM ED with a stretcher-lined corridor and also read a deployment report from Goa — and tell you, specifically, which decisions belong to which side of that line, and why. That's not a data science problem. It's a translation problem. And it's the job I'm training for, whether or not the job posting says so yet.</p>
+
+    <div class="disclaimer">
+      Figures on AI-assisted triage performance and India public-health screening outcomes are drawn from published research and Qure.ai's 2026 "AI in Action" report at the India AI Impact Summit. This piece reflects my own reading and opinion as a practicing EM resident, not an endorsement of any product.
+    </div>
+
+    <div class="author-card">
+      <div class="initial">S</div>
+      <div class="who">
+        <h3>Dr. Shifana</h3>
+        <p>Final-year Emergency Medicine resident practicing in Tamil Nadu. Writes about the gap between how AI is sold and how it actually behaves at 3 AM.</p>
+      </div>
+    </div>
+  </article>
+
+  <div class="follow-cta">
+    <p>More of this — ER stories, exam systems, and the occasional AI take — on Instagram.</p>
+    <a class="cta-primary" href="https://instagram.com/tea.and.toxins" target="_blank" rel="noopener">Follow @tea.and.toxins</a>
+  </div>
+</div>
+
+<footer>
+  <div class="inner">
+    <p>Tea and Toxins — Dr. Shifana, MD (Emergency Medicine)<br>Tamil Nadu, India</p>
+  </div>
+</footer>
+
+</body>
+</html>
